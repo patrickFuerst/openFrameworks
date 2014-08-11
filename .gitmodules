@@ -4,3 +4,9 @@
 [submodule "addons/ofxMSAOpenCL"]
 	path = addons/ofxMSAOpenCL
 	url = git@github.com:tgfrerer/ofxMSAOpenCL.git
+[submodule "apps/myApps/ofTessellationTest"]
+	path = apps/myApps/ofTessellationTest
+	url = git@github.com:patrickFuerst/ofTessellationTest.git
+[submodule "apps/myApps/hopftest"]
+	path = apps/myApps/hopftest
+	url = git@bitbucket.org:PatrickFuerst/hopftest.git
