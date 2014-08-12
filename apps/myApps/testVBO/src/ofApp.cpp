@@ -4,7 +4,7 @@
 void ofApp::setup(){
 
     
-    mVbo.setMesh(ofMesh::sphere(1), GL_STATIC_DRAW);
+    mVbo.setMesh(ofMesh::plane(1,1,1,1), GL_STATIC_DRAW);
     // mVbo.enableVAOs();
     // main camera
     mCam.lookAt(ofVec3f::zero());
@@ -26,9 +26,11 @@ void ofApp::update(){
 void ofApp::draw(){
 
     ofClear(0, 0, 0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     mCam.begin();
-    //mVbo.drawElements(GL_TRIANGLE_STRIP, mVbo.getNumIndices());
-    mVbo.draw(GL_TRIANGLES, 0, mVbo.getNumVertices());
+    mVbo.drawElements(GL_TRIANGLE_STRIP, mVbo.getNumIndices());
+    //mVbo.draw(GL_TRIANGLES, 0, mVbo.getNumVertices());
     mCam.end();
 }
 
