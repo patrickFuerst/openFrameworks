@@ -1,0 +1,46 @@
+#version 400 core
+
+precision highp float;
+precision highp int;
+layout(std140, column_major) uniform;
+layout(triangles, fractional_even_spacing, ccw) in; //equal_spacing fractional_even_spacing fractional_odd_spacing
+
+uniform mat4 MVP;
+
+
+in vertex
+{
+    vec4 Color;
+    vec3 Normal;
+    vec3 TexCoord;
+}In[];
+
+out vertex
+{
+    vec4 Color;
+    vec3 Normal;
+    vec3 TexCoord;
+}Out;
+
+vec4 interpolate(in vec4 p0, in vec4 p1, in vec4 p2 )
+{
+    float a  = gl_TessCoord.x;
+    float b  = gl_TessCoord.y;
+    float c = gl_TessCoord.z;
+    
+    return  normalize(a*p0 + b*p1 + c*p2);
+}
+
+void main()
+{
+    
+    // access something else than Out.Color will result in a linking error (crash)
+    // or nothing showing up
+    
+	gl_Position =  interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
+	//Out.Color = interpolate(In[0].Color, In[1].Color, In[2].Color );
+    Out.Color = vec4(1,0.8,0.4,1.0);
+    Out.Normal = vec3(1,0.8,0.0); // ONLY for test
+    // Out.Normal =   interpolate(In[0].Normal, In[1].Normal, In[2].Normal );
+
+}
