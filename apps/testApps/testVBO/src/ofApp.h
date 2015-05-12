@@ -2,20 +2,13 @@
 
 #include "ofMain.h"
 
-#include "ofxOpenCv.h"
-
-
-
-using namespace cv;
-
-
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
 		void update();
 		void draw();
-		
+
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -24,19 +17,8 @@ class ofApp : public ofBaseApp{
 		void mouseReleased(int x, int y, int button);
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);		
-
-		  ofVideoGrabber 		vidGrabber;
-		
-    ofxCvColorImage			colorImg;
-    ofxCvGrayscaleImage     grayImg;
-    ofxCvGrayscaleImage     grayImgLogo;
-    ofxCvColorImage			logoImg;
+		void gotMessage(ofMessage msg);
     
-		int 				threshold;
-		bool				bLearnBakground;
-    IplImage* imgResult;
-
-
+    ofVbo mVbo;
+	ofEasyCam mCam;
 };
-
