@@ -17,6 +17,4 @@
 # don't ignore the .gitignore file
 !.gitignore
 
-#ignore my private apps
-HopfTest/
 
