@@ -41,31 +41,31 @@ in gl_PerVertex
 void main()
 {
 
-	// position is in world coords
+	// position is in view space coords
 	vec4 pos1 = gl_in[1].gl_Position;
 	vec4 pos2 = gl_in[2].gl_Position;
 	vec3 tangent = pos2.xyz - pos1.xyz;
 	tangent = normalize(tangent);
-	vec3 eyeVec =  cameraPosition - pos1.xyz;
+	vec3 eyeVec =   normalize(-pos1.xyz);
 	vec3 sideVec = normalize(cross(eyeVec, tangent));
 	//vec3 width1 = sideVec * strandWidth[0];
 	//vec3 width2 = sideVec * strandWidth[1];
     vec3 width1 = sideVec * 0.25;
 	vec3 width2 = sideVec * 0.25;
 	// Offset positions to for drawing triangles in world space
-	gl_Position =  projectionMatrix * vec4( pos1.xyz + width1, 1 ) ;
+	gl_Position =  projectionMatrix *   vec4( pos1.xyz + width1, 1 ) ;
    	Out.color = In[1].color;
     EmitVertex();
 
-	gl_Position =  projectionMatrix * vec4( pos1.xyz - width1, 1 );
+	gl_Position =  projectionMatrix *  vec4( pos1.xyz - width1, 1 );
 	Out.color = In[1].color;
     EmitVertex();
 
-	gl_Position =  projectionMatrix * vec4( pos2.xyz + width2, 1 );
+	gl_Position =  projectionMatrix *  vec4( pos2.xyz + width2, 1 );
    	Out.color = In[2].color;
     EmitVertex();
 
-	gl_Position =  projectionMatrix * vec4( pos2.xyz - width2, 1 );
+	gl_Position =  projectionMatrix *  vec4( pos2.xyz - width2, 1 );
    	Out.color = In[2].color;
     EmitVertex();
 

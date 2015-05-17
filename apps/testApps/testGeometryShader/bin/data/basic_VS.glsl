@@ -20,7 +20,6 @@ layout(location = POSITION) in vec4 position;
 
 uniform mat4 modelViewProjectionMatrix;
 uniform mat4 modelViewMatrix;
-uniform mat4 modelMatrix;
 uniform vec4 globalColor; 
 out block
 {
@@ -35,7 +34,7 @@ out gl_PerVertex
 void main()
 {	
 	//gl_Position = modelViewProjectionMatrix * position ;
-	gl_Position =  modelMatrix * position ;
+	gl_Position =  modelViewMatrix * position ;
 	Out.color  = globalColor;
 }
 
