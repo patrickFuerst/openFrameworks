@@ -2,8 +2,8 @@
 #include "ofConstants.h"
 
 
-#define NUM_HAIRS 16
-#define NUM_HAIR_PARTICLES 64
+#define NUM_HAIRS 1
+#define NUM_HAIR_PARTICLES 32   // number must not be bigger then WORK_GROUP_SIZE , current 32 max, because glsl for loop limited
 #define HAIR_LENGTH 0.5f
 
 
@@ -13,8 +13,13 @@
 void ofApp::reloadShaders(){
 
 		
-	mComputeShader.setupShaderFromFile(GL_COMPUTE_SHADER,"integrateComputeShader.glsl");
+
+//	mComputeShader.setupShaderFromFile(GL_COMPUTE_SHADER,"integrateComputeShader.glsl");
+	mComputeShader.setupShaderFromFile(GL_COMPUTE_SHADER,"hairSimulation.glsl");
 	mComputeShader.linkProgram();
+	mComputeShader.begin();
+	int size[3]; 
+	glGetProgramiv( mComputeShader.getProgram(), GL_COMPUTE_WORK_GROUP_SIZE, size);
 
 	mHairshader.setupShaderFromFile( GL_VERTEX_SHADER, "basic_VS.glsl");
 	mHairshader.setupShaderFromFile( GL_FRAGMENT_SHADER, "basic_FS.glsl");
@@ -51,7 +56,8 @@ void ofApp::setup(){
 			p.pos.y = startPos.y - j * deltaY;
 			p.pos.z = startPos.z;
 			p.pos.w = 1.0; 
-			p.prevPos = p.pos; 			
+			p.prevPos = p.pos;
+			p.vel.set(0,0,0,0);
 			p.fixed = j == 0 ? true : false;
 			index++;
 		}
@@ -70,8 +76,13 @@ void ofApp::setup(){
 	mShaderUniforms.add( mVelocityDamping.set("g_velocityDamping", 0.5f, 0,1));
 	mShaderUniforms.add( mNumConstraintIterations.set("g_numIterations", 25, 0,200));
 	mShaderUniforms.add( mStiffness.set("g_stiffness",1.0f, 0,1));
+	mShaderUniforms.add( mUseFTL.set( "g_useFTL" , 0,0,1 ));
+	mShaderUniforms.add( mFTLDistanceDamping.set("g_ftlDamping", 1.0,0.0,1.0));
+		
 	gui.add(mShaderUniforms);
 	gui.add(fps.set("fps",60,0,10000));
+
+
 
 //	gui.add(dirAsColor.set("dir as color",false));
 //	dirAsColor.addListener(this,&ofApp::dirAsColorChanged);

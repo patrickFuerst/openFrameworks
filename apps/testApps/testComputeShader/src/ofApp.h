@@ -27,6 +27,7 @@ class ofApp : public ofBaseApp{
 		struct Particle{
 			ofVec4f pos;
 			ofVec4f prevPos;
+			ofVec4f vel;
 			ofFloatColor color;
 			int fixed;  // actually bool in glsl
 			int pad[3];  // struct in glsl is aligned to multiple of the biggest base alingment, here 16 , so offset of next is 64 not 52
@@ -47,8 +48,18 @@ class ofApp : public ofBaseApp{
 		ofVbo vbo;
 		ofxPanel gui;
 		ofParameter<float> mVelocityDamping,  mStiffness ; 
-		ofParameter<int> mNumConstraintIterations ; 
 		ofParameterGroup mShaderUniforms;
+		ofParameterGroup mConstraints; 
+
+		// integrated length contraint 
+		ofParameter<int> mNumConstraintIterations ; 
+
+		// dynamic follow the leader constraint 
+		ofParameter<float> mFTLDistanceDamping;
+		ofParameter<int> mUseFTL; 
+
+		
+
 		ofParameter<float> fps;
 
 

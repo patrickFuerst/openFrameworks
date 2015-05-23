@@ -1,6 +1,6 @@
 #version 440
 
-#pragma include "computeHelper.glsl"
+//#pragma include "computeHelper.glsl"
 
 #define LOCAL_GROUP_SIZE_X 64
 
@@ -29,6 +29,7 @@ uniform float g_strandLength;
 uniform float g_velocityDamping; 
 uniform int g_numIterations; 
 uniform float g_timeStep;
+uniform float g_ftlDamping;
 
 // additional compute shader properties
 uniform int g_numVerticesPerStrand;
@@ -61,7 +62,7 @@ vec2 constrainMultiplier( bool fixed0 , bool fixed1){
 }
 
 
-void  applyLengthConstraint( inout vec4 pos0 , in bool fixed0, inout vec4 pos1, in bool fixed1,  float targetLength, float stiffness = 1.0){
+vec4  applyLengthConstraintDFTL(  vec4 pos0 ,  bool fixed0,  vec4 pos1,  bool fixed1,  float targetLength, float stiffness = 1.0){
 
 	vec3 delta = pos1.xyz - pos0.xyz; 
 	float distance = max( length( delta ), 1e-7);
@@ -69,8 +70,7 @@ void  applyLengthConstraint( inout vec4 pos0 , in bool fixed0, inout vec4 pos1, 
 	delta = stretching * delta; 
 	vec2 multiplier = constrainMultiplier(fixed0, fixed1);
 
-	pos0.xyz += multiplier[0] * delta * stiffness;
-	pos1.xyz -= multiplier[1] * delta * stiffness;
+	return vec4(pos1.xyz - 1.0 * delta * stiffness,1.0);
 
 }
 
@@ -89,11 +89,11 @@ void calculateIndices( inout uint localVertexIndex , inout uint localStrandIndex
 
 }
 
-vec4 verletIntegration(  vec4 position , vec4 previousPosition, vec4 force,  bool fix){
-	//  TODO implement time correct verlet integration
+vec4 positionIntegration( vec4 position, vec4 velocity, vec4 force, bool fix){
+
 	if( !fix){
 
-		position.xyz +=   (position.xyz - previousPosition.xyz) * g_velocityDamping	  + force.xyz * g_timeStep * g_timeStep;
+		position.xyz +=   velocity.xyz * g_velocityDamping * g_timeStep  + force.xyz * g_timeStep * g_timeStep;
 
 	}else{
 
@@ -102,6 +102,7 @@ vec4 verletIntegration(  vec4 position , vec4 previousPosition, vec4 force,  boo
 
 	}
 	return position; 
+
 }
 
 void main(){
@@ -110,44 +111,35 @@ void main(){
 	calculateIndices( localVertexIndex, localStrandIndex, globalStrandIndex,vertexIndexInStrand, g_numVerticesPerStrand,g_numStrandsPerThreadGroup );
 	
 	const vec4 oldPosition = sharedPos[localVertexIndex] =  p[gl_GlobalInvocationID.x].pos;
-	const vec4 prevPosition =   p[gl_GlobalInvocationID.x].prevPos;
+	const vec4 velocity =   p[gl_GlobalInvocationID.x].vel;
 	sharedFixed[localVertexIndex] = p[gl_GlobalInvocationID.x].fix;
 
 	
-//	memoryBarrierShared();
 	vec4 force = vec4(g_gravityForce,0);
-
-	sharedPos[localVertexIndex]  = verletIntegration( sharedPos[localVertexIndex], prevPosition, force, sharedFixed[localVertexIndex]);
-
-
-	const uint index0 = localVertexIndex*2;
-	const uint index1 = localVertexIndex*2+1;
-	const uint index2 = localVertexIndex*2+2;
-	const bool fixed0 = sharedFixed[index0];
-	const bool fixed1 = sharedFixed[index1];
-	const bool fixed2 = sharedFixed[index2];
+	sharedPos[localVertexIndex]  = positionIntegration( sharedPos[localVertexIndex], velocity, force, sharedFixed[localVertexIndex]);
 
 	memoryBarrierShared();
-	
-	float stiffness = 1.0 - pow( (1.0 - g_stiffness), 1.0/g_numIterations); // linear depended on the iterations now
-	
-	for(int i = 0 ; i < g_numIterations ; i++){
-		
-		if( localVertexIndex <  floor(gl_WorkGroupSize.x/2) && (index0 % g_numVerticesPerStrand) < g_numVerticesPerStrand-1){
-			applyLengthConstraint( sharedPos[index0], fixed0, sharedPos[index1], fixed1, g_strandLength/g_numVerticesPerStrand, stiffness);
-		}
 
-		groupMemoryBarrier();
-		if( (index1 % g_numVerticesPerStrand) < g_numVerticesPerStrand -1){
-			applyLengthConstraint( sharedPos[index1], fixed1, sharedPos[index2], fixed2, g_strandLength/g_numVerticesPerStrand, stiffness);			
+	if(vertexIndexInStrand  == 0){
+
+		for(int i= 0; i < g_numVerticesPerStrand-1; i++){
+			bool fix = sharedFixed[localVertexIndex+i+1];
+			sharedPos[localVertexIndex+i+1] = applyLengthConstraintDFTL( sharedPos[localVertexIndex+i], true, sharedPos[localVertexIndex+i+1], fix, g_strandLength/g_numVerticesPerStrand, g_stiffness);			
+
 		}
-		groupMemoryBarrier();
 
 	}
 
+ 	groupMemoryBarrier();
+ 	vec4 distanceToNext = vec4(0,0,0,0);
+	if(vertexIndexInStrand < g_numVerticesPerStrand-1){
+		distanceToNext.xyz = sharedPos[localVertexIndex].xyz - sharedPos[localVertexIndex+1].xyz ;
+	}
+	vec3 derivedVelocity = (sharedPos[localVertexIndex].xyz - oldPosition.xyz) / g_timeStep - g_ftlDamping *distanceToNext.xyz / g_timeStep; 
 
 	//memoryBarrierShared();
 
+	p[gl_GlobalInvocationID.x].vel.xyz = derivedVelocity.xyz;
 	p[gl_GlobalInvocationID.x].pos.xyz = sharedPos[gl_LocalInvocationID.x].xyz;
 	p[gl_GlobalInvocationID.x].prevPos.xyz = oldPosition.xyz;
 	
