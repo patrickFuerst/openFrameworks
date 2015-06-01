@@ -88,8 +88,8 @@ public:
 
 	GLint getUniformLocation(const string & name) const;
 	
-	GLint getSubroutineLocation(const string & name, GLenum shadertype) const;
-	GLint getSubroutineUniformLocation(const string & name, GLenum shadertype) const;
+	GLint getSubroutineLocation(GLenum shadertype, const string & name) const;
+	GLint getSubroutineUniformLocation(GLenum shadertype, const string & name) const;
 	
 	// set attributes that vary per vertex (look up the location before glBegin)
 	GLint getAttributeLocation(const string & name) const;

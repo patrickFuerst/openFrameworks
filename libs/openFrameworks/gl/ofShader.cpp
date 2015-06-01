@@ -875,7 +875,7 @@ GLint ofShader::getUniformLocation(const string & name)  const{
 }
 
 //--------------------------------------------------------------
-GLint ofShader::getSubroutineLocation(const string & name, GLenum shadertype)  const{
+GLint ofShader::getSubroutineLocation(GLenum shadertype, const string & name )  const{
 	if(!bLoaded) return -1;
 	GLint loc = -1;
 
@@ -891,7 +891,7 @@ GLint ofShader::getSubroutineLocation(const string & name, GLenum shadertype)  c
 }
 
 //--------------------------------------------------------------
-GLint ofShader::getSubroutineUniformLocation(const string & name, GLenum shadertype)  const{
+GLint ofShader::getSubroutineUniformLocation(GLenum shadertype, const string & name)  const{
 	if(!bLoaded) return -1;
 	GLint loc = -1;
 
@@ -954,7 +954,7 @@ void ofShader::printSubroutineNames( GLenum shadertype) const {
 		for(int j = 0; j < length; j++) {
 			line << subroutineName[j];
 		}
-		line << " @ index " << getSubroutineLocation(subroutineName, shadertype);
+		line << " @ index " << getSubroutineLocation(shadertype, subroutineName);
 		ofLogNotice("ofShader") << line.str();
 		line.str("");
 	}
@@ -983,7 +983,7 @@ void ofShader::printSubroutineUniforms( GLenum shadertype) const {
 		for(int j = 0; j < length; j++) {
 			line << subroutineUniformName[j];
 		}
-		line << " @ index " << getSubroutineUniformLocation(subroutineUniformName, shadertype);
+		line << " @ index " << getSubroutineUniformLocation(shadertype, subroutineUniformName);
 		ofLogNotice("ofShader") << line.str();
 		line.str("");
 	}
