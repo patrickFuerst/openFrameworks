@@ -875,6 +875,38 @@ GLint ofShader::getUniformLocation(const string & name)  const{
 }
 
 //--------------------------------------------------------------
+GLint ofShader::getSubroutineLocation(const string & name, GLenum shadertype)  const{
+	if(!bLoaded) return -1;
+	GLint loc = -1;
+
+	// tig: caching uniform locations gives the RPi a 17% boost on average
+	unordered_map<string, GLint>::iterator it = subroutineLocations.find(name);
+	if (it == subroutineLocations.end()){
+		loc = glGetSubroutineIndex(program, shadertype, name.c_str());
+		subroutineLocations[name] = loc;
+	} else {
+		loc = it->second;
+	}
+	return loc;
+}
+
+//--------------------------------------------------------------
+GLint ofShader::getSubroutineUniformLocation(const string & name, GLenum shadertype)  const{
+	if(!bLoaded) return -1;
+	GLint loc = -1;
+
+	// tig: caching uniform locations gives the RPi a 17% boost on average
+	unordered_map<string, GLint>::iterator it = subroutineUniformLocations.find(name);
+	if (it == subroutineUniformLocations.end()){
+		loc = glGetSubroutineUniformLocation(program, shadertype, name.c_str());
+		subroutineUniformLocations[name] = loc;
+	} else {
+		loc = it->second;
+	}
+	return loc;
+}
+
+//--------------------------------------------------------------
 void ofShader::printActiveUniforms()  const{
 	GLint numUniforms = 0;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numUniforms);
@@ -901,6 +933,64 @@ void ofShader::printActiveUniforms()  const{
 	delete [] uniformName;
 }
 
+//--------------------------------------------------------------
+void ofShader::printSubroutineNames( GLenum shadertype) const {
+
+	GLint numSubroutines = 0;
+	glGetProgramStageiv(program, shadertype,  GL_ACTIVE_SUBROUTINES, &numSubroutines);
+	ofLogNotice("ofShader") << numSubroutines << " subroutines";
+	
+	GLint subroutineMaxLength = 0;
+	glGetProgramStageiv(program, shadertype, GL_ACTIVE_SUBROUTINE_MAX_LENGTH, &subroutineMaxLength);
+	
+	GLint count = -1;
+	GLenum type = 0;
+	GLchar* subroutineName = new GLchar[subroutineMaxLength];
+	stringstream line;
+	for(GLint i = 0; i < numSubroutines; i++) {
+		GLsizei length;
+		glGetActiveSubroutineName(program, shadertype, i, subroutineMaxLength, &length, subroutineName);
+		line << "[" << i << "] ";
+		for(int j = 0; j < length; j++) {
+			line << subroutineName[j];
+		}
+		line << " @ index " << getSubroutineLocation(subroutineName, shadertype);
+		ofLogNotice("ofShader") << line.str();
+		line.str("");
+	}
+	delete [] subroutineName;
+
+}
+
+//--------------------------------------------------------------
+void ofShader::printSubroutineUniforms( GLenum shadertype) const {
+
+	GLint numSubroutineUniforms = 0;
+	glGetProgramStageiv(program, shadertype,  GL_ACTIVE_SUBROUTINE_UNIFORMS, &numSubroutineUniforms);
+	ofLogNotice("ofShader") << numSubroutineUniforms << " subroutine uniforms";
+	
+	GLint subroutineMaxLength = 0;
+	glGetProgramStageiv(program, shadertype, GL_ACTIVE_SUBROUTINE_UNIFORM_MAX_LENGTH, &subroutineMaxLength);
+	
+	GLint count = -1;
+	GLenum type = 0;
+	GLchar* subroutineUniformName = new GLchar[subroutineMaxLength];
+	stringstream line;
+	for(GLint i = 0; i < numSubroutineUniforms; i++) {
+		GLsizei length;
+		glGetActiveSubroutineUniformName(program, shadertype, i, subroutineMaxLength, &length, subroutineUniformName);
+		line << "[" << i << "] ";
+		for(int j = 0; j < length; j++) {
+			line << subroutineUniformName[j];
+		}
+		line << " @ index " << getSubroutineUniformLocation(subroutineUniformName, shadertype);
+		ofLogNotice("ofShader") << line.str();
+		line.str("");
+	}
+	delete [] subroutineUniformName;
+
+}
+	
 //--------------------------------------------------------------
 void ofShader::printActiveAttributes()  const{
 	GLint numAttributes = 0;

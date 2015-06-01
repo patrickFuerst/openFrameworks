@@ -88,6 +88,9 @@ public:
 
 	GLint getUniformLocation(const string & name) const;
 	
+	GLint getSubroutineLocation(const string & name, GLenum shadertype) const;
+	GLint getSubroutineUniformLocation(const string & name, GLenum shadertype) const;
+	
 	// set attributes that vary per vertex (look up the location before glBegin)
 	GLint getAttributeLocation(const string & name) const;
 
@@ -119,7 +122,9 @@ public:
 
 	void printActiveUniforms() const;
 	void printActiveAttributes() const;
-	
+	void printSubroutineNames( GLenum shadertype) const; 
+	void printSubroutineUniforms( GLenum shadertype) const; 
+
 
 	// advanced use
 	
@@ -164,6 +169,8 @@ private:
 	unordered_map<GLenum, GLuint> shaders;
 	unordered_map<GLenum, string> shaderSource;
 	mutable unordered_map<string, GLint> uniformLocations;
+	mutable unordered_map<string, GLint> subroutineLocations;
+	mutable unordered_map<string, GLint> subroutineUniformLocations;
 
 	void checkProgramInfoLog(GLuint program);
 	bool checkProgramLinkStatus(GLuint program);
