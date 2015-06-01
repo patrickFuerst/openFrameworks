@@ -14,12 +14,15 @@ void ofApp::reloadShaders(){
 
 		
 
-//	mComputeShader.setupShaderFromFile(GL_COMPUTE_SHADER,"integrateComputeShader.glsl");
 	mComputeShader.setupShaderFromFile(GL_COMPUTE_SHADER,"hairSimulation.glsl");
 	mComputeShader.linkProgram();
 	mComputeShader.begin();
 	int size[3]; 
 	glGetProgramiv( mComputeShader.getProgram(), GL_COMPUTE_WORK_GROUP_SIZE, size);
+
+	mComputeShader.printSubroutineNames(GL_COMPUTE_SHADER);
+	mComputeShader.printSubroutineUniforms(GL_COMPUTE_SHADER);
+
 
 	mHairshader.setupShaderFromFile( GL_VERTEX_SHADER, "basic_VS.glsl");
 	mHairshader.setupShaderFromFile( GL_FRAGMENT_SHADER, "basic_FS.glsl");
@@ -109,6 +112,11 @@ void ofApp::update(){
 	mStrandModelMatrixPrevInversed = mStrandModelMatrix.getInverse();
 	
 	mComputeShader.begin();
+	GLint subroutine = mComputeShader.getSubroutineLocation( GL_COMPUTE_SHADER , "PBDApproach");
+	GLuint subroutineUniforms[1];
+	subroutineUniforms[0] = subroutine;
+	glUniformSubroutinesuiv( GL_COMPUTE_SHADER, 1, subroutineUniforms);
+	
 	mComputeShader.setUniforms(mShaderUniforms);
 	mComputeShader.setUniform1f("g_timeStep",timeStep);
 	mComputeShader.setUniform1i("g_numVerticesPerStrand",NUM_HAIR_PARTICLES);
@@ -119,7 +127,7 @@ void ofApp::update(){
 	mComputeShader.setUniform1f("elapsedTime",ofGetElapsedTimef());
 	mComputeShader.dispatchCompute( NUMGROUPS, 1, 1);
 	mComputeShader.end();
-
+	
 }
 
 //--------------------------------------------------------------
@@ -132,7 +140,7 @@ void ofApp::draw(){
 	glPointSize(2);
 	mHairshader.begin();
 
-	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT); //? 
 	vbo.draw(GL_POINTS,0,particles.size());
 
 	mHairshader.end();
