@@ -1,9 +1,6 @@
 [submodule "apps/projectGenerator/projectGeneratorSimple"]
 	path = apps/projectGenerator/projectGeneratorSimple
 	url = https://github.com/ofZach/projectGeneratorSimple.git
-[submodule "addons/ofxMSAOpenCL"]
-	path = addons/ofxMSAOpenCL
-	url = git@github.com:tgfrerer/ofxMSAOpenCL.git
 [submodule "apps/myApps/ofTessellationTest"]
 	path = apps/myApps/ofTessellationTest
 	url = git@github.com:patrickFuerst/ofTessellationTest.git
