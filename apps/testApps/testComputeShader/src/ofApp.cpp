@@ -23,6 +23,10 @@ void ofApp::reloadShaders(){
 	mComputeShader.printSubroutineNames(GL_COMPUTE_SHADER);
 	mComputeShader.printSubroutineUniforms(GL_COMPUTE_SHADER);
 
+	mComputeShader.setUniform3f("g_gravityForce", ofVec3f(0,-10,0));
+	mComputeShader.setUniform1i("g_numVerticesPerStrand",NUM_HAIR_PARTICLES);
+	mComputeShader.setUniform1i("g_numStrandsPerThreadGroup", NUM_HAIRS * NUM_HAIRS / WORK_GROUP_SIZE);
+	mComputeShader.setUniform1f("g_strandLength",HAIR_LENGTH);
 
 	mHairshader.setupShaderFromFile( GL_VERTEX_SHADER, "basic_VS.glsl");
 	mHairshader.setupShaderFromFile( GL_FRAGMENT_SHADER, "basic_FS.glsl");
@@ -79,16 +83,20 @@ void ofApp::setup(){
 	mShaderUniforms.add( mVelocityDamping.set("g_velocityDamping", 0.5f, 0,1));
 	mShaderUniforms.add( mNumConstraintIterations.set("g_numIterations", 25, 0,200));
 	mShaderUniforms.add( mStiffness.set("g_stiffness",1.0f, 0,1));
-	mShaderUniforms.add( mUseFTL.set( "g_useFTL" , 0,0,1 ));
 	mShaderUniforms.add( mFTLDistanceDamping.set("g_ftlDamping", 1.0,0.0,1.0));
-		
-	gui.add(mShaderUniforms);
+	mSimulationAlgorithms.setName( "shader algorithms");
+	
+	mPBDAlgorithm.setup( "PBD Algorithm");
+	mDFTLAlgorithm.setup( "DFTL Algorithm" );
+	mPBDAlgorithm.addListener( this, &ofApp::algorithmChanged );
+	mDFTLAlgorithm.addListener( this, &ofApp::algorithmChanged );
+	
+	gui.add( &mPBDAlgorithm);
+	gui.add( &mDFTLAlgorithm);
+	gui.add( mShaderUniforms);
 	gui.add(fps.set("fps",60,0,10000));
 
 
-
-//	gui.add(dirAsColor.set("dir as color",false));
-//	dirAsColor.addListener(this,&ofApp::dirAsColorChanged);
 
 	particlesBuffer.bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 }
@@ -112,18 +120,12 @@ void ofApp::update(){
 	mStrandModelMatrixPrevInversed = mStrandModelMatrix.getInverse();
 	
 	mComputeShader.begin();
-	GLint subroutine = mComputeShader.getSubroutineLocation( GL_COMPUTE_SHADER , "PBDApproach");
-	GLuint subroutineUniforms[1];
-	subroutineUniforms[0] = subroutine;
+
 	glUniformSubroutinesuiv( GL_COMPUTE_SHADER, 1, subroutineUniforms);
 	
 	mComputeShader.setUniforms(mShaderUniforms);
 	mComputeShader.setUniform1f("g_timeStep",timeStep);
-	mComputeShader.setUniform1i("g_numVerticesPerStrand",NUM_HAIR_PARTICLES);
-	mComputeShader.setUniform1i("g_numStrandsPerThreadGroup", NUM_HAIRS * NUM_HAIRS / WORK_GROUP_SIZE);
-	mComputeShader.setUniform1f("g_strandLength",HAIR_LENGTH);
 	mComputeShader.setUniformMatrix4f("g_modelMatrixDelta",strandModelMatrixDelta );	
-	mComputeShader.setUniform3f("g_gravityForce", ofVec3f(0,-10,0));
 	mComputeShader.setUniform1f("elapsedTime",ofGetElapsedTimef());
 	mComputeShader.dispatchCompute( NUMGROUPS, 1, 1);
 	mComputeShader.end();
@@ -151,12 +153,18 @@ void ofApp::draw(){
 	gui.draw();
 }
 
-void ofApp::dirAsColorChanged(bool & dirAsColor){
-	if(dirAsColor){
-		vbo.enableColors();
-	}else{
-		vbo.disableColors();
-	}
+void ofApp::algorithmChanged(const void* sender ) {
+	
+	ofxButton* button = (ofxButton*) sender; 
+	string name = button->getName();
+	GLint subroutine = 0;
+
+	if( name == "PBD Algorithm" )
+		subroutine = mComputeShader.getSubroutineLocation( GL_COMPUTE_SHADER , "PBDApproach");
+	else if( name == "DFTL Algorithm" )
+		subroutine = mComputeShader.getSubroutineLocation( GL_COMPUTE_SHADER , "DFTLApproach");
+
+	subroutineUniforms[0] = subroutine;
 }
 
 //--------------------------------------------------------------

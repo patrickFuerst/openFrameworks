@@ -24,6 +24,9 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+		void algorithmChanged(const void* sender);
+
+
 		struct Particle{
 			ofVec4f pos;
 			ofVec4f prevPos;
@@ -46,21 +49,23 @@ class ofApp : public ofBaseApp{
 		//ofEasyCam camera;
 		ofCamera camera;
 		ofVbo vbo;
+		
 		ofxPanel gui;
 		ofParameter<float> mVelocityDamping,  mStiffness ; 
 		ofParameterGroup mShaderUniforms;
-		ofParameterGroup mConstraints; 
-
+		ofxGuiGroup mSimulationAlgorithms; 
+		ofxButton mPBDAlgorithm, mDFTLAlgorithm; 
+		
 		// integrated length contraint 
 		ofParameter<int> mNumConstraintIterations ; 
 
 		// dynamic follow the leader constraint 
 		ofParameter<float> mFTLDistanceDamping;
-		ofParameter<int> mUseFTL; 
+		ofParameter<float> fps;
 
 		
+		GLuint subroutineUniforms[1];
 
-		ofParameter<float> fps;
 
 
 		bool mReloadShaders; 
