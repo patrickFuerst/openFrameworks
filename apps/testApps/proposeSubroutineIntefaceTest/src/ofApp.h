@@ -7,8 +7,6 @@ class ofApp : public ofBaseApp{
 	public:
 
 
-
-
 		ofShader mShader; 
 		vector<GLuint> mSubRoutineUniforms; 
 
@@ -68,7 +66,7 @@ class ofApp : public ofBaseApp{
 		void draw(){
 		
 			mShader.begin();
-			// maybe set this in begin() if mSubRoutineUniforms is not empty
+			// maybe set this in begin() if mSubRoutineUniforms is not empty 
 			glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, mSubRoutineUniforms.size(), mSubRoutineUniforms.data() );
 			ofDrawSphere(1);
 
@@ -83,7 +81,7 @@ class ofApp : public ofBaseApp{
 		
 		
 			if( key == 'r'){
-				// this could be void setSubroutineUniform( GLenum shadertype, string uniformName, string subroutineName )
+				// this could be  ofShader::setSubroutineUniform( GLenum shadertype, string uniformName, string subroutineName )
 				GLuint subroutineUniformLocation = glGetSubroutineUniformLocation( mShader.getProgram(), GL_FRAGMENT_SHADER, "u_selectedColor"); 
 				GLuint subroutineLocation = glGetSubroutineIndex( mShader.getProgram(), GL_FRAGMENT_SHADER, "redColor" ); 
 				mSubRoutineUniforms.at(subroutineUniformLocation) = subroutineLocation; 
