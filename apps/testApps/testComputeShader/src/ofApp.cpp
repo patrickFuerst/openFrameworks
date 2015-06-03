@@ -2,8 +2,8 @@
 #include "ofConstants.h"
 
 
-#define NUM_HAIRS 1
-#define NUM_HAIR_PARTICLES 32   // number must not be bigger then WORK_GROUP_SIZE , current 32 max, because glsl for loop limited
+#define NUM_HAIRS 300
+#define NUM_HAIR_PARTICLES 16   // number must not be bigger then WORK_GROUP_SIZE , current 32 max, because glsl for loop limited
 #define HAIR_LENGTH 0.5f
 
 
@@ -50,8 +50,8 @@ void ofApp::setup(){
 	particles.resize(NUM_HAIRS* NUM_HAIR_PARTICLES);
 
 	int index = 0;
-	ofVec3f startPos(0,0.0,0);
-	float deltaX = 0.1;
+	ofVec3f startPos(-0.5,0.0,0);
+	float deltaX = 1.0f/NUM_HAIRS;
 	float deltaY = HAIR_LENGTH/NUM_HAIR_PARTICLES;
 	for (int i = 0; i < NUM_HAIRS; i++)
 	{

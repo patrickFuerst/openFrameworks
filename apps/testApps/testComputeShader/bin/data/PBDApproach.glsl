@@ -24,6 +24,7 @@ subroutine(hairSimulationAlgorithm) void PBDApproach( const uint localStrandInde
 	const bool fixed2 = sharedFixed[index2];
 
 	memoryBarrierShared();
+	barrier();
 
 	
 	float stiffness = 1.0 - pow( (1.0 - g_stiffness), 1.0/g_numIterations); // linear depended on the iterations now
@@ -31,17 +32,18 @@ subroutine(hairSimulationAlgorithm) void PBDApproach( const uint localStrandInde
 	for(int i = 0 ; i < g_numIterations ; i++){
 		
 		if( localVertexIndex <  floor(gl_WorkGroupSize.x/2) && (index0 % g_numVerticesPerStrand) < g_numVerticesPerStrand-1){
-			applyLengthConstraint( sharedPos[index0], fixed0, sharedPos[index1], fixed1, g_strandLength/g_numVerticesPerStrand, stiffness);
-		}
+			applyLengthConstraint( sharedPos[index0], true, sharedPos[index1], fixed1, g_strandLength/g_numVerticesPerStrand, stiffness);
 
-		groupMemoryBarrier();
+		}
+		memoryBarrierShared();
 		if( (index1 % g_numVerticesPerStrand) < g_numVerticesPerStrand -1){
 			applyLengthConstraint( sharedPos[index1], fixed1, sharedPos[index2], fixed2, g_strandLength/g_numVerticesPerStrand, stiffness);			
 		}
-		groupMemoryBarrier();
+		memoryBarrierShared();
 
 	}
 
-	updateParticle(sharedPos[gl_LocalInvocationID.x], oldPosition,velocity,color );
+
+	updateParticle(sharedPos[localVertexIndex], oldPosition,velocity,color );
 
 }

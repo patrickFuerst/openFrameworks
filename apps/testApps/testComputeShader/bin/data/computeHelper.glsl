@@ -84,8 +84,7 @@ vec4 verletIntegration(  vec4 position , vec4 previousPosition, vec4 force,  boo
 
 	}else{
 
-		position = g_modelMatrixDelta * position ;
-		position /= position.w;
+		position.xyz = (g_modelMatrixDelta * vec4(position.xyz,1.0)).xyz ;
 
 	}
 	return position; 
