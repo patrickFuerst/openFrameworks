@@ -25,7 +25,7 @@ void ofApp::reloadShaders(){
 
 	mComputeShader.setUniform3f("g_gravityForce", ofVec3f(0,-10,0));
 	mComputeShader.setUniform1i("g_numVerticesPerStrand",NUM_HAIR_PARTICLES);
-	mComputeShader.setUniform1i("g_numStrandsPerThreadGroup", NUM_HAIRS * NUM_HAIRS / WORK_GROUP_SIZE);
+	mComputeShader.setUniform1i("g_numStrandsPerThreadGroup",  WORK_GROUP_SIZE / NUM_HAIR_PARTICLES);
 	mComputeShader.setUniform1f("g_strandLength",HAIR_LENGTH);
 
 	mHairshader.setupShaderFromFile( GL_VERTEX_SHADER, "basic_VS.glsl");
