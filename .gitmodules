@@ -1,6 +1,6 @@
-[submodule "apps/projectGenerator/projectGeneratorSimple"]
-	path = apps/projectGenerator/projectGeneratorSimple
-	url = https://github.com/ofZach/projectGeneratorSimple.git
 [submodule "apps/myApps/ofTessellationTest"]
 	path = apps/myApps/ofTessellationTest
 	url = git@github.com:patrickFuerst/ofTessellationTest.git
+[submodule "projectGenerator"]
+	path = projectGenerator
+	url = C:\\Users\\Patrick\\DEV\\openFrameworks\\apps\\projectGenerator
