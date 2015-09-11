@@ -87,9 +87,11 @@ public:
 	void setUniformMatrix4f(const string & name, const ofMatrix4x4 & m, int count = 1) const;
 
 	GLint getUniformLocation(const string & name) const;
-	
+
+#if !defined(TARGET_OPENGLES) && defined(glGetSubroutineUniformLocation)
 	GLint getSubroutineLocation(GLenum shadertype, const string & name) const;
 	GLint getSubroutineUniformLocation(GLenum shadertype, const string & name) const;
+#endif
 	
 	// set attributes that vary per vertex (look up the location before glBegin)
 	GLint getAttributeLocation(const string & name) const;
@@ -122,9 +124,11 @@ public:
 
 	void printActiveUniforms() const;
 	void printActiveAttributes() const;
+
+#if !defined(TARGET_OPENGLES) && defined(glGetSubroutineUniformLocation)
 	void printSubroutineNames( GLenum shadertype) const; 
 	void printSubroutineUniforms( GLenum shadertype) const; 
-
+#endif
 
 	// advanced use
 	
@@ -169,8 +173,11 @@ private:
 	unordered_map<GLenum, GLuint> shaders;
 	unordered_map<GLenum, string> shaderSource;
 	mutable unordered_map<string, GLint> uniformLocations;
+
+#if !defined(TARGET_OPENGLES) && defined(glGetSubroutineUniformLocation)
 	mutable unordered_map<string, GLint> subroutineLocations;
 	mutable unordered_map<string, GLint> subroutineUniformLocations;
+#endif
 
 	void checkProgramInfoLog(GLuint program);
 	bool checkProgramLinkStatus(GLuint program);
