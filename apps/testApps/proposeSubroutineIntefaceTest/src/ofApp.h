@@ -54,11 +54,10 @@ class ofApp : public ofBaseApp{
 				glGetProgramStageiv( mShader.getProgram(), GL_FRAGMENT_SHADER, GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS, &uniformSize);
 				mSubRoutineUniforms.resize(uniformSize);
 				
-				// already implemented this, so it get cached like normal uniforms 
-				GLuint subroutineUniformLocation = glGetSubroutineUniformLocation( mShader.getProgram(), GL_FRAGMENT_SHADER, "u_selectedColor"); // ofShader::getSubroutineUniformLocation
-				GLuint subroutineLocation = glGetSubroutineIndex( mShader.getProgram(), GL_FRAGMENT_SHADER, "greenColor" ); // ofShader::getSubroutineLocation
+				GLuint subroutineUniformLocation = mShader.getSubroutineUniformLocation(GL_FRAGMENT_SHADER,  "u_selectedColor");
+				GLuint subroutineLocation = mShader.getSubroutineLocation(GL_FRAGMENT_SHADER, "greenColor");
 				
-				// ofShader should handle an array for all shadetypes 
+				// ofShader should handle an array for all shadertypes 
 				mSubRoutineUniforms.at(subroutineUniformLocation) = subroutineLocation; 
 		
 		};
@@ -82,13 +81,13 @@ class ofApp : public ofBaseApp{
 		
 			if( key == 'r'){
 				// this could be  ofShader::setSubroutineUniform( GLenum shadertype, string uniformName, string subroutineName )
-				GLuint subroutineUniformLocation = glGetSubroutineUniformLocation( mShader.getProgram(), GL_FRAGMENT_SHADER, "u_selectedColor"); 
-				GLuint subroutineLocation = glGetSubroutineIndex( mShader.getProgram(), GL_FRAGMENT_SHADER, "redColor" ); 
+				GLuint subroutineUniformLocation = mShader.getSubroutineUniformLocation(GL_FRAGMENT_SHADER, "u_selectedColor");
+				GLuint subroutineLocation = mShader.getSubroutineLocation(GL_FRAGMENT_SHADER, "redColor");
 				mSubRoutineUniforms.at(subroutineUniformLocation) = subroutineLocation; 
 
 			}else if(key == 'g'){
-				GLuint subroutineUniformLocation = glGetSubroutineUniformLocation( mShader.getProgram(), GL_FRAGMENT_SHADER, "u_selectedColor"); 
-				GLuint subroutineLocation = glGetSubroutineIndex( mShader.getProgram(), GL_FRAGMENT_SHADER, "greenColor" ); 
+				GLuint subroutineUniformLocation = mShader.getSubroutineUniformLocation(GL_FRAGMENT_SHADER, "u_selectedColor");
+				GLuint subroutineLocation = mShader.getSubroutineLocation(GL_FRAGMENT_SHADER, "greenColor");
 				mSubRoutineUniforms.at(subroutineUniformLocation) = subroutineLocation; 
 			}
 		
