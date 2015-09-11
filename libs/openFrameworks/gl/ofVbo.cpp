@@ -20,15 +20,15 @@ bool ofVbo::vaoChecked=false;
 #ifdef TARGET_OPENGLES
 	#include <dlfcn.h>
 	typedef void (* glGenVertexArraysType) (GLsizei n,  GLuint *arrays);
-	glGenVertexArraysType glGenVertexArraysFunc = NULL;
+	glGenVertexArraysType glGenVertexArraysFunc = nullptr;
 	#define glGenVertexArrays								glGenVertexArraysFunc
 
 	typedef void (* glDeleteVertexArraysType) (GLsizei n,  GLuint *arrays);
-	glDeleteVertexArraysType glDeleteVertexArraysFunc = NULL;
+	glDeleteVertexArraysType glDeleteVertexArraysFunc = nullptr;
 	#define glDeleteVertexArrays							glDeleteVertexArraysFunc
 
 	typedef void (* glBindVertexArrayType) (GLuint array);
-	glBindVertexArrayType glBindVertexArrayFunc = NULL;
+	glBindVertexArrayType glBindVertexArrayFunc = nullptr;
 	#define glBindVertexArray								glBindVertexArrayFunc
 #endif
 
@@ -230,10 +230,11 @@ ofVbo::ofVbo(const ofVbo & mom){
 	totalIndices = mom.totalIndices;
 	indexAttribute = mom.indexAttribute;
 
+	vaoChanged = mom.vaoChanged;
+	vaoID = mom.vaoID;
+
 	if(ofIsGLProgrammableRenderer()){
-		vaoID	   = mom.vaoID;
 		retainVAO(vaoID);
-		vaoChanged = mom.vaoChanged;
 	}
 }
 
@@ -257,10 +258,11 @@ ofVbo & ofVbo::operator=(const ofVbo& mom){
 	totalIndices = mom.totalIndices;
 	indexAttribute = mom.indexAttribute;
 
+	vaoChanged = mom.vaoChanged;
+	vaoID = mom.vaoID;
+
 	if(ofIsGLProgrammableRenderer()){
-		vaoID	   = mom.vaoID;
 		retainVAO(vaoID);
-		vaoChanged = mom.vaoChanged;
 	}
 	return *this;
 }
@@ -379,7 +381,7 @@ void ofVbo::setIndexData(const ofIndexType * indices, int total, int usage){
 
 //--------------------------------------------------------------
 ofVbo::VertexAttribute & ofVbo::getOrCreateAttr(int location){
-	VertexAttribute * attr = NULL;
+	VertexAttribute * attr = nullptr;
 	if (ofIsGLProgrammableRenderer()) {
 		switch (location){
 			case ofShader::POSITION_ATTRIBUTE:
@@ -496,7 +498,7 @@ void ofVbo::updateIndexData(const ofIndexType * indices, int total) {
 }
 
 void ofVbo::updateAttributeData(int location, const float * attr0x, int total){
-	VertexAttribute * attr = NULL;
+	VertexAttribute * attr = nullptr;
 	if (ofIsGLProgrammableRenderer()) {
 		switch (location){
 			case ofShader::POSITION_ATTRIBUTE:
@@ -522,7 +524,7 @@ void ofVbo::updateAttributeData(int location, const float * attr0x, int total){
 			attr = &customAttributes[location];
 		}
 	}
-	if (attr !=NULL && attr->isAllocated()) {
+	if (attr !=nullptr && attr->isAllocated()) {
 		attr->updateData(0, total*attr->stride, attr0x);
 	}
 }
@@ -656,7 +658,7 @@ GLuint ofVbo::getAttributeId(int location) const {
 void ofVbo::setVertexBuffer(ofBufferObject & buffer, int numCoords, int stride, int offset){
 	positionAttribute.setBuffer(buffer, numCoords, stride, offset);
 	bUsingVerts = true;
-
+	vaoChanged = true;
 	// Calculate the total number of vertices based on what we know:
 	int tmpStride = stride;
 	if (tmpStride == 0) {
@@ -948,6 +950,7 @@ void ofVbo::clear(){
 //--------------------------------------------------------------
 void ofVbo::clearVertices(){
 	positionAttribute = VertexAttribute();
+	positionAttribute.location = ofShader::POSITION_ATTRIBUTE;
 	bUsingVerts = false;
 	totalVerts = 0;
 }
@@ -955,12 +958,14 @@ void ofVbo::clearVertices(){
 //--------------------------------------------------------------
 void ofVbo::clearNormals(){
 	normalAttribute = VertexAttribute();
+	normalAttribute.location = ofShader::NORMAL_ATTRIBUTE;
 	bUsingNormals = false;
 }
 
 //--------------------------------------------------------------
 void ofVbo::clearColors(){
 	colorAttribute = VertexAttribute();
+	colorAttribute.location = ofShader::COLOR_ATTRIBUTE;
 	bUsingColors = false;
 	
 }
@@ -968,6 +973,7 @@ void ofVbo::clearColors(){
 //--------------------------------------------------------------
 void ofVbo::clearTexCoords(){
 	texCoordAttribute = VertexAttribute();
+	texCoordAttribute.location = ofShader::TEXCOORD_ATTRIBUTE;
 	bUsingTexCoords = false;
 }
 

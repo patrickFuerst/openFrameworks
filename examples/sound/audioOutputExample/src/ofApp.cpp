@@ -29,6 +29,9 @@ void ofApp::setup(){
 
 	soundStream.setup(this, 2, 0, sampleRate, bufferSize, 4);
 
+	// on OSX: if you want to use ofSoundPlayer together with ofSoundStream you need to synchronize buffersizes.
+	// use ofFmodSetBuffersize(bufferSize) to set the buffersize in fmodx prior to loading a file.
+	
 	ofSetFrameRate(60);
 }
 
@@ -158,6 +161,16 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	bNoise = false;
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y){
+
 }
 
 //--------------------------------------------------------------

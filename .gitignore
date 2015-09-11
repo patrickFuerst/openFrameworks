@@ -28,8 +28,8 @@ scripts/apothecary/build
 [Bb]uild/
 [Oo]bj/
 *.o
-[Dd]ebug*/
-[Rr]elease*/
+examples/**/[Dd]ebug*/
+examples/**/[Rr]elease*/
 *.mode*
 *.app/
 *.pyc

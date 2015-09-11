@@ -30,8 +30,8 @@ UInt32	numSounds;
 bool	mp3Loaded;
 
 
-static ofMutex& soundPlayerLock() {
-    static ofMutex* m = new ofMutex;
+static std::mutex& soundPlayerLock() {
+  static std::mutex* m = new std::mutex;
     return *m;
 }
 
@@ -225,12 +225,12 @@ void ofxOpenALSoundPlayer::setPaused(bool bP) {
 	if(iAmAnMp3)
 		cerr<<"error, cannot set pause on mp3s in openAL"<<endl; // TODO
 	else {
-		bool isPlaying = isPlaying();
+		bool bPlaying = isPlaying();
 		bPaused = bP;
 		
-		if(bPaused && isPlaying)
+		if(bPaused && bPlaying)
 			SoundEngine_PauseEffect(myPrimedId);
-		else if(!bPaused && !isPlaying)
+		else if(!bPaused && !bPlaying)
 			play();
 	}
 }
@@ -319,7 +319,7 @@ int ofxOpenALSoundPlayer::getPositionMS()  const{
 
 //--------------------------------------------------------------
 
-bool ofxOpenALSoundPlayer::isPlaying()  const{
+bool ofxOpenALSoundPlayer::isPlaying() {
 	if ( !bLoadedOk ) 
 		return false;
 

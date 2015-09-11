@@ -31,7 +31,7 @@ void ofApp::draw() {
     ofTranslate(ofGetWidth()/2.0f,ofGetHeight()/2.0f);
     ofRotateZ(angle);
     ofEnableAlphaBlending();
-    rpiLogo.draw(-rpiLogo.width/2.0f,-rpiLogo.height/2.0f);
+    rpiLogo.draw(-rpiLogo.getWidth()/2.0f,-rpiLogo.getHeight()/2.0f);
     ofDisableAlphaBlending();
     ofPopMatrix();
 
@@ -72,6 +72,16 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
     ofLogVerbose("ofApp") << "mouseReleased() x = " << x << "/" << y << " button=" << button;
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y){
+
 }
 
 //--------------------------------------------------------------

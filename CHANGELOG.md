@@ -13,6 +13,7 @@ CORE
 ### app
 	/ setupOpenGL and ofApp___Window use ofWindowMode instead of int
 	/ fix exit callbacks to allow for calling of the destructors, and better signal handling
+	/ changed windowEntry event to mouseEntered/mouseExted, added these callbacks when registering for mouse events
 
 ### 3d
 	/ ofEasyCam: removes roll rotation when rotating inside the arcball
@@ -51,6 +52,7 @@ CORE
 	  `ofVbo::setAttributeData(ofShader::TEXCOORD_ATTRIBUTE, ...)` which allows
 	  for 3d texture coordinates.
 	/ Fix ofTexture::readToPixels for non RGBA or 4 aligned formats
+	/ Rename ofTextureData.glTypeInternal -> ofTextureDataData.glInternalFormat (this brings the parameter's name into sync with the OpenGL enum it represents)
 ### graphics
 	+ ofTruetypeFont: kerning and better hinting and spacing
 	+ ofDrawBitmapString: can draw any type not only strings
@@ -71,7 +73,7 @@ CORE
 
 ### sound
 	/ ofFmodSoundPlayer: fix for file handles not being closed
-
+    / Deprecated all ofBaseSoundInput/Output methods that do not take an ofSoundBuffer.
 ### utils
 	/ better timming in fps calculation
 	+ ofFpsCounter allows to easily meassure the fps of any element
@@ -88,7 +90,9 @@ CORE
 	/ gstreamer: faster reload by default and optional asynchronous load
 	/ ofVideoPlayer::loadMovie() -> load()
 	/ ofVideoGrabber::initGrabber() -> setup()
-
+### types
+	+ ofRectangle: added `setSize` method.
+	+ ofRectangle: added `operator -` method.
 
 PLATFORM SPECIFIC
 -----------------
@@ -126,7 +130,12 @@ CORE ADDONS
     - Removed, see ofxMaxim for a replacement (https://github.com/micknoise/Maximilian)
 
 ### ofxKinect
-    / Bugfix for kinects not keeping their IDs when using multiple kinects. 
+    / Bugfix for kinects not keeping their IDs when using multiple kinects.
+
+PROJECT GENERATOR
+-----------------
+
++ Added scroll feature in the Addons part of the (full) Project Generator
 
 OF 0.8.4
 ========

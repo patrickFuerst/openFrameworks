@@ -37,37 +37,69 @@
 #include <assert.h>
 
 ofxOscSender::ofxOscSender()
+:broadcast(true)
+,port(0)
 {
-	socket = NULL;
 }
 
-ofxOscSender::~ofxOscSender()
-{
-	if ( socket )
-		shutdown();
+ofxOscSender::ofxOscSender(const ofxOscSender & mom)
+:broadcast(mom.broadcast)
+,hostname(mom.hostname)
+,port(mom.port){
+	if(mom.socket){
+		setup(hostname,port);
+	}
 }
 
-void ofxOscSender::setup( std::string hostname, int port, bool enableBroadcast )
+ofxOscSender & ofxOscSender::operator=(const ofxOscSender & mom){
+	if(this == &mom) return *this;
+
+	broadcast = mom.broadcast;
+	hostname = mom.hostname;
+	port = mom.port;
+	if(mom.socket){
+		setup(hostname,port);
+	}
+	return *this;
+}
+
+void ofxOscSender::setup( std::string hostname, int port )
 {
-    if( UdpSocket::GetUdpBufferSize() == 0 ){
-        UdpSocket::SetUdpBufferSize(65535);
+    if( osc::UdpSocket::GetUdpBufferSize() == 0 ){
+    	osc::UdpSocket::SetUdpBufferSize(65535);
     }
 
-	if ( socket )
-		shutdown();
-	
-    socket = new UdpTransmitSocket(IpEndpointName( hostname.c_str(), port), enableBroadcast);
+    socket.reset(new osc::UdpTransmitSocket(osc::IpEndpointName( hostname.c_str(), port), broadcast));
+    this->hostname = hostname;
+    this->port = port;
+}
+
+void ofxOscSender::disableBroadcast()
+{
+	broadcast = false;
+	if(socket){
+		setup(hostname, port);
+	}
+}
+
+void ofxOscSender::enableBroadcast()
+{
+	broadcast = true;
+	if(socket){
+		setup(hostname, port);
+	}
 }
 
 void ofxOscSender::shutdown()
 {
-	if ( socket )
-		delete socket;
-	socket = NULL;
+	socket.reset();
 }
 
 void ofxOscSender::sendBundle( ofxOscBundle& bundle )
 {
+	if(!socket){
+		ofLogError("ofxOscSender") << "trying to send before setup";
+	}
     //setting this much larger as it gets trimmed down to the size its using before being sent.
     //TODO: much better if we could make this dynamic? Maybe have ofxOscBundle return its size?
 	static const int OUTPUT_BUFFER_SIZE = 327680;
@@ -82,6 +114,9 @@ void ofxOscSender::sendBundle( ofxOscBundle& bundle )
 
 void ofxOscSender::sendMessage( ofxOscMessage& message, bool wrapInBundle )
 {
+	if(!socket){
+		ofLogError("ofxOscSender") << "trying to send before setup";
+	}
     //setting this much larger as it gets trimmed down to the size its using before being sent.
     //TODO: much better if we could make this dynamic? Maybe have ofxOscMessage return its size?
     static const int OUTPUT_BUFFER_SIZE = 327680;
@@ -125,7 +160,7 @@ void ofxOscSender::appendParameter( ofxOscBundle & _bundle, const ofAbstractPara
 	if(parameter.type()==typeid(ofParameterGroup).name()){
 		ofxOscBundle bundle;
 		const ofParameterGroup & group = static_cast<const ofParameterGroup &>(parameter);
-		for(int i=0;i<group.size();i++){
+		for(std::size_t i=0;i<group.size();i++){
 			const ofAbstractParameter & p = group[i];
 			if(p.isSerializable()){
 				appendParameter(bundle,p,address+group.getEscapedName()+"/");
@@ -147,8 +182,10 @@ void ofxOscSender::appendParameter( ofxOscMessage & msg, const ofAbstractParamet
 		msg.addIntArg(parameter.cast<int>());
 	}else if(parameter.type()==typeid(ofParameter<float>).name()){
 		msg.addFloatArg(parameter.cast<float>());
+	}else if(parameter.type()==typeid(ofParameter<double>).name()){
+		msg.addDoubleArg(parameter.cast<double>());
 	}else if(parameter.type()==typeid(ofParameter<bool>).name()){
-		msg.addIntArg(parameter.cast<bool>());
+		msg.addBoolArg(parameter.cast<bool>());
 	}else{
 		msg.addStringArg(parameter.toString());
 	}
@@ -180,8 +217,22 @@ void ofxOscSender::appendMessage( ofxOscMessage& message, osc::OutboundPacketStr
 			p << (osc::int64)message.getArgAsInt64( i );
 		else if ( message.getArgType( i ) == OFXOSC_TYPE_FLOAT )
 			p << message.getArgAsFloat( i );
-		else if ( message.getArgType( i ) == OFXOSC_TYPE_STRING )
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_DOUBLE )
+			p << message.getArgAsDouble( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_STRING || message.getArgType( i ) == OFXOSC_TYPE_SYMBOL)
 			p << message.getArgAsString( i ).c_str();
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_CHAR )
+			p << message.getArgAsChar( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_MIDI_MESSAGE )
+			p << message.getArgAsMidiMessage( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRUE || message.getArgType( i ) == OFXOSC_TYPE_FALSE )
+			p << message.getArgAsBool( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TRIGGER )
+			p << message.getArgAsTrigger( i );
+		else if ( message.getArgType( i ) == OFXOSC_TYPE_TIMETAG )
+			p << (osc::int64)message.getArgAsTimetag( i );
+		//else if ( message.getArgType( i ) == OFXOSC_TYPE_RGBA_COLOR )
+		//	p << message.getArgAsRgbaColor( i );
         else if ( message.getArgType( i ) == OFXOSC_TYPE_BLOB ){
             ofBuffer buff = message.getArgAsBlob(i);
             osc::Blob b(buff.getData(), (unsigned long)buff.size());

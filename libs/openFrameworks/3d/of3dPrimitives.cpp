@@ -145,7 +145,7 @@ void of3dPrimitive::mapTexCoords( float u1, float v1, float u2, float v2 ) {
     //setTexCoords( u1, v1, u2, v2 );
     ofVec4f prevTcoord = getTexCoords();
     
-    for(int j = 0; j < getMesh().getNumTexCoords(); j++ ) {
+	for(std::size_t j = 0; j < getMesh().getNumTexCoords(); j++ ) {
         ofVec2f tcoord = getMesh().getTexCoord(j);
         tcoord.x = ofMap(tcoord.x, prevTcoord.x, prevTcoord.z, u1, u2);
         tcoord.y = ofMap(tcoord.y, prevTcoord.y, prevTcoord.w, v1, v2);
@@ -533,14 +533,14 @@ void ofCylinderPrimitive::set(float _radius, float _height, int radiusSegments, 
     bCapped = _bCapped;
     resolution.set( radiusSegments, heightSegments, capSegments );
     
-    int resX = getResolution().x;
-    int resY = getResolution().y-1;
-    int resZ = getResolution().z-1;
+    int resX = std::max(getResolution().x,0.0f);
+    int resY = std::max(getResolution().y-1,0.0f);
+    int resZ = std::max(getResolution().z-1,0.0f);
     
     int indexStep = 2;
     if(mode == OF_PRIMITIVE_TRIANGLES) {
         indexStep = 6;
-        resX = resX-1;
+        resX = std::max(resX-1,0);
     }
     
     // 0 -> top cap
@@ -762,14 +762,14 @@ void ofConePrimitive::set( float _radius, float _height, int radiusSegments, int
     height = _height;
     resolution.set(radiusSegments, heightSegments, capSegments);
     
-    int resX = getResolution().x;
-    int resY = getResolution().y-1;
-    int resZ = getResolution().z-1;
+    int resX = std::max(getResolution().x, 0.0f);
+    int resY = std::max(getResolution().y-1, 0.0f);
+    int resZ = std::max(getResolution().z-1, 0.0f);
     
     int indexStep = 2;
     if(mode == OF_PRIMITIVE_TRIANGLES) {
         indexStep = 6;
-        resX = resX-1;
+        resX = std::max(resX-1, 0);
     }
     
     strides[ 0 ][0] = 0;

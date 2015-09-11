@@ -18,6 +18,7 @@ void ofApp::setup(){
 	grabBG = true;
 	player.play();
 
+	player.update();
 	player.getTexture().bindAsImage(0,GL_READ_ONLY);
 	bg.bindAsImage(1,GL_READ_ONLY);
 	thres.bindAsImage(2,GL_WRITE_ONLY);
@@ -80,6 +81,16 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y){
 
 }
 

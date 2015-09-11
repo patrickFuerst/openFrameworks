@@ -27,6 +27,7 @@ public:
 	,alphaBits(8)
 	,depthBits(24)
 	,stencilBits(0)
+	,stereo(false)
 	,visible(true)
 	,iconified(false)
 	,decorated(true)
@@ -44,6 +45,7 @@ public:
 	,alphaBits(8)
 	,depthBits(24)
 	,stencilBits(0)
+	,stereo(false)
 	,visible(true)
 	,iconified(false)
 	,decorated(true)
@@ -60,6 +62,7 @@ public:
 	,alphaBits(8)
 	,depthBits(24)
 	,stencilBits(0)
+	,stereo(false)
 	,visible(true)
 	,iconified(false)
 	,decorated(true)
@@ -75,6 +78,7 @@ public:
 	int alphaBits;
 	int depthBits;
 	int stencilBits;
+	bool stereo;
 	bool visible;
 	bool iconified;
 	bool decorated;
@@ -203,6 +207,7 @@ private:
 	static ofAppGLFWWindow * setCurrent(GLFWwindow* windowP);
 	static void 	mouse_cb(GLFWwindow* windowP_, int button, int state, int mods);
 	static void 	motion_cb(GLFWwindow* windowP_, double x, double y);
+	static void 	entry_cb(GLFWwindow* windowP_, int entered);
 	static void 	keyboard_cb(GLFWwindow* windowP_, int key, int scancode, unsigned int codepoint, int action, int mods);
 	static void 	resize_cb(GLFWwindow* windowP_, int w, int h);
 	static void 	exit_cb(GLFWwindow* windowP_);
@@ -228,7 +233,8 @@ private:
 	bool			buttonPressed;
 
 	int 			nFramesSinceWindowResized;
-    bool            bMultiWindowFullscreen; 
+    bool            bMultiWindowFullscreen;
+	bool			bWindowNeedsShowing;
 
 	GLFWwindow* 	windowP;
     

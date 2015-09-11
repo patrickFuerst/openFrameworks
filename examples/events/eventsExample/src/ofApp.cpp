@@ -17,9 +17,6 @@ void ofApp::draw(){
 	
 	timeString = "time: " + ofGetTimestampString("%H:%M:%S") + "\nelapsed time: " + ofToString(ofGetElapsedTimeMillis());
 	
-	float w = vagRounded.stringWidth(eventString);
-	float h = vagRounded.stringHeight(eventString);
-	
 	ofSetHexColor(0xffffff);
 	vagRounded.drawString(eventString, 98,198);
 	
@@ -189,6 +186,16 @@ void ofApp::mousePressed(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	eventString = "mouseReleased = (" + ofToString(x) + ", " + ofToString(y) + " - button " + ofToString(button) + ")";
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseEntered(int x, int y){
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseExited(int x, int y){
+
 }
 
 //--------------------------------------------------------------

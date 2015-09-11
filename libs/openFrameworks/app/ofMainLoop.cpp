@@ -32,8 +32,8 @@ ofMainLoop::ofMainLoop()
 :bShouldClose(false)
 ,status(0)
 ,allowMultiWindow(true)
-,windowLoop(NULL)
-,pollEvents(NULL)
+,windowLoop(nullptr)
+,pollEvents(nullptr)
 ,escapeQuits(true){
 
 }
@@ -79,7 +79,8 @@ void ofMainLoop::run(shared_ptr<ofAppBaseWindow> window, shared_ptr<ofBaseApp> a
 		ofAddListener(window->events().mousePressed,app.get(),&ofBaseApp::mousePressed,OF_EVENT_ORDER_APP);
 		ofAddListener(window->events().mouseReleased,app.get(),&ofBaseApp::mouseReleased,OF_EVENT_ORDER_APP);
 		ofAddListener(window->events().mouseScrolled,app.get(),&ofBaseApp::mouseScrolled,OF_EVENT_ORDER_APP);
-		ofAddListener(window->events().windowEntered,app.get(),&ofBaseApp::windowEntry,OF_EVENT_ORDER_APP);
+		ofAddListener(window->events().mouseEntered,app.get(),&ofBaseApp::mouseEntered,OF_EVENT_ORDER_APP);
+		ofAddListener(window->events().mouseExited,app.get(),&ofBaseApp::mouseExited,OF_EVENT_ORDER_APP);
 		ofAddListener(window->events().windowResized,app.get(),&ofBaseApp::windowResized,OF_EVENT_ORDER_APP);
 		ofAddListener(window->events().messageEvent,app.get(),&ofBaseApp::messageReceived,OF_EVENT_ORDER_APP);
 		ofAddListener(window->events().fileDragEvent,app.get(),&ofBaseApp::dragged,OF_EVENT_ORDER_APP);
@@ -129,7 +130,7 @@ int ofMainLoop::loop(){
 }
 
 void ofMainLoop::loopOnce(){
-	for(map<shared_ptr<ofAppBaseWindow>,shared_ptr<ofBaseApp> >::iterator i = windowsApps.begin(); !windowsApps.empty() && i != windowsApps.end() ;){
+	for(auto i = windowsApps.begin(); !windowsApps.empty() && i != windowsApps.end();){
 		if(i->first->getWindowShouldClose()){
 			i->first->close();
 			windowsApps.erase(i++); ///< i now points at the window after the one which was just erased
@@ -147,14 +148,14 @@ void ofMainLoop::loopOnce(){
 }
 
 void ofMainLoop::exit(){
-	for(auto i = windowsApps.begin();i!=windowsApps.end();i++){
-		shared_ptr<ofAppBaseWindow> window = i->first;
-		shared_ptr<ofBaseApp> app = i->second;
+	for(auto i: windowsApps){
+		shared_ptr<ofAppBaseWindow> window = i.first;
+		shared_ptr<ofBaseApp> app = i.second;
 		
-		if(window == NULL) {
+		if(window == nullptr) {
 			continue;
 		}
-		if(app == NULL) {
+		if(app == nullptr) {
 			continue;
 		}
 		
@@ -169,7 +170,8 @@ void ofMainLoop::exit(){
 		ofRemoveListener(window->events().mousePressed,app.get(),&ofBaseApp::mousePressed,OF_EVENT_ORDER_APP);
 		ofRemoveListener(window->events().mouseReleased,app.get(),&ofBaseApp::mouseReleased,OF_EVENT_ORDER_APP);
 		ofRemoveListener(window->events().mouseScrolled,app.get(),&ofBaseApp::mouseScrolled,OF_EVENT_ORDER_APP);
-		ofRemoveListener(window->events().windowEntered,app.get(),&ofBaseApp::windowEntry,OF_EVENT_ORDER_APP);
+		ofRemoveListener(window->events().mouseEntered,app.get(),&ofBaseApp::mouseEntered,OF_EVENT_ORDER_APP);
+		ofRemoveListener(window->events().mouseExited,app.get(),&ofBaseApp::mouseExited,OF_EVENT_ORDER_APP);
 		ofRemoveListener(window->events().windowResized,app.get(),&ofBaseApp::windowResized,OF_EVENT_ORDER_APP);
 		ofRemoveListener(window->events().messageEvent,app.get(),&ofBaseApp::messageReceived,OF_EVENT_ORDER_APP);
 		ofRemoveListener(window->events().fileDragEvent,app.get(),&ofBaseApp::dragged,OF_EVENT_ORDER_APP);
@@ -210,9 +212,9 @@ void ofMainLoop::setCurrentWindow(ofAppBaseWindow * window){
 	if(currentWindow.get() == window){
 		return;
 	}
-	for(auto i = windowsApps.begin();i!=windowsApps.end();i++){
-		if(i->first.get() == window){
-			currentWindow = i->first;
+	for(auto i: windowsApps){
+		if(i.first.get() == window){
+			currentWindow = i.first;
 			break;
 		}
 	}
@@ -227,8 +229,8 @@ ofCoreEvents & ofMainLoop::events(){
 }
 
 void ofMainLoop::shouldClose(int _status){
-	for(auto i = windowsApps.begin();i!=windowsApps.end();i++){
-		i->first->setWindowShouldClose();
+	for(auto i: windowsApps){
+		i.first->setWindowShouldClose();
 	}
 	bShouldClose = true;
 	status = _status;

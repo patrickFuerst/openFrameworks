@@ -12,8 +12,8 @@
 ofRtAudioSoundStream::ofRtAudioSoundStream(){
 	outDeviceID		= -1;
     inDeviceID		= -1;
-	soundOutputPtr	= NULL;
-	soundInputPtr	= NULL;
+	soundOutputPtr	= nullptr;
+	soundInputPtr	= nullptr;
 	tickCount= 0;
 	nOutputChannels = 0;
 	nInputChannels = 0;
@@ -32,8 +32,8 @@ vector<ofSoundDevice> ofRtAudioSoundStream::getDeviceList() const{
 	shared_ptr<RtAudio> audioTemp;
 	try {
 		audioTemp = shared_ptr<RtAudio>(new RtAudio());
-	} catch (RtError &error) {
-		error.printMessage();
+	} catch (std::exception &error) {
+   		ofLogError() << error.what();
 		return vector<ofSoundDevice>();
 	}
  	int deviceCount = audioTemp->getDeviceCount();
@@ -42,9 +42,9 @@ vector<ofSoundDevice> ofRtAudioSoundStream::getDeviceList() const{
 	for (int i=0; i< deviceCount; i++) {
 		try {
 			info = audioTemp->getDeviceInfo(i);
-		} catch (RtError &error) {
+		} catch (std::exception &error) {
 			ofLogError("ofRtAudioSoundStream") << "Error retrieving info for device " << i;
-			error.printMessage();
+	   		ofLogError() << error.what();
 			break;
 		}
 		
@@ -91,7 +91,7 @@ void ofRtAudioSoundStream::setOutput(ofBaseSoundOutput * soundOutput){
 
 //------------------------------------------------------------------------------
 bool ofRtAudioSoundStream::setup(int outChannels, int inChannels, int _sampleRate, int _bufferSize, int nBuffers){
-	if( audio != NULL ){
+	if( audio != nullptr ){
 		close();
 	}
 
@@ -104,8 +104,8 @@ bool ofRtAudioSoundStream::setup(int outChannels, int inChannels, int _sampleRat
 
 	try {
 		audio = shared_ptr<RtAudio>(new RtAudio());
-	}	catch (RtError &error) {
-		error.printMessage();
+	} catch (std::exception &error) {
+   		ofLogError() << error.what();
 		return false;
 	}
 
@@ -139,13 +139,13 @@ bool ofRtAudioSoundStream::setup(int outChannels, int inChannels, int _sampleRat
 	inputBuffer.setDeviceID(inDeviceID);
 
 	try {
-		audio ->openStream( (nOutputChannels>0)?&outputParameters:NULL, (nInputChannels>0)?&inputParameters:NULL, RTAUDIO_FLOAT32,
+		audio ->openStream( (nOutputChannels>0)?&outputParameters:nullptr, (nInputChannels>0)?&inputParameters:nullptr, RTAUDIO_FLOAT32,
 							sampleRate, &bufferFrames, &rtAudioCallback, this, &options);
 		audio->startStream();
-	} catch (RtError &error) {
-		error.printMessage();
-		return false;
-	}
+	} catch (std::exception &error) {
+   		ofLogError() << error.what();
+   		return false;
+ 	}
 	return true;
 }
 
@@ -158,41 +158,41 @@ bool ofRtAudioSoundStream::setup(ofBaseApp * app, int outChannels, int inChannel
 
 //------------------------------------------------------------------------------
 void ofRtAudioSoundStream::start(){
-	if( audio == NULL ) return;
+	if( audio == nullptr ) return;
 
 	try{
 		audio->startStream();
-	} catch (RtError &error) {
-		error.printMessage();
-	}
+	} catch (std::exception &error) {
+   		ofLogError() << error.what();
+ 	}
 }
 
 //------------------------------------------------------------------------------
 void ofRtAudioSoundStream::stop(){
-	if( audio == NULL ) return;
+	if( audio == nullptr ) return;
 
 	try {
 		if(audio->isStreamRunning()) {
     		audio->stopStream();
 		}
-  	} catch (RtError &error) {
-   		error.printMessage();
+  	} catch (std::exception &error) {
+   		ofLogError() << error.what();
  	}
 }
 
 //------------------------------------------------------------------------------
 void ofRtAudioSoundStream::close(){
-	if( audio == NULL ) return;
+	if( audio == nullptr ) return;
 
 	try {
 		if(audio->isStreamOpen()) {
     		audio->closeStream();
 		}
-  	} catch (RtError &error) {
-   		error.printMessage();
+  	} catch (std::exception &error) {
+   		ofLogError() << error.what();
  	}
-	soundOutputPtr	= NULL;
-	soundInputPtr	= NULL;
+	soundOutputPtr	= nullptr;
+	soundInputPtr	= nullptr;
 	audio.reset();	// delete
 }
 
@@ -240,11 +240,11 @@ int ofRtAudioSoundStream::rtAudioCallback(void *outputBuffer, void *inputBuffer,
 	// you need to cut in the middle. if the simpleApp
 	// doesn't produce audio, we pass silence instead of duplex...
 	
-	int nInputChannels = rtStreamPtr->getNumInputChannels();
-	int nOutputChannels = rtStreamPtr->getNumOutputChannels();
+	unsigned int nInputChannels = rtStreamPtr->getNumInputChannels();
+	unsigned int nOutputChannels = rtStreamPtr->getNumOutputChannels();
 	
 	if(nInputChannels > 0){
-		if( rtStreamPtr->soundInputPtr != NULL ){
+		if( rtStreamPtr->soundInputPtr != nullptr ){
 			rtStreamPtr->inputBuffer.copyFrom(fPtrIn, nFramesPerBuffer, nInputChannels, rtStreamPtr->getSampleRate());
 			rtStreamPtr->inputBuffer.setTickCount(rtStreamPtr->tickCount);
 			rtStreamPtr->soundInputPtr->audioIn(rtStreamPtr->inputBuffer);
@@ -254,7 +254,7 @@ int ofRtAudioSoundStream::rtAudioCallback(void *outputBuffer, void *inputBuffer,
 	}
 	
 	if (nOutputChannels > 0) {
-		if( rtStreamPtr->soundOutputPtr != NULL ){
+		if( rtStreamPtr->soundOutputPtr != nullptr ){
 			
 			if ( rtStreamPtr->outputBuffer.size() != nFramesPerBuffer*nOutputChannels || rtStreamPtr->outputBuffer.getNumChannels()!=nOutputChannels ){
 				rtStreamPtr->outputBuffer.setNumChannels(nOutputChannels);
