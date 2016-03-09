@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include <Availability.h>
+#include <TargetConditionals.h>
+#if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
 
-#include "ofMain.h"
-#include <MapKit/MapKit.h>
+#import <MapKit/MapKit.h>
+#include "ofBaseTypes.h"
 #include "ofxiOSMapKitListener.h"
-#include <list>
 
 // these are the types you can set for the map
 enum ofxiOSMapKitType {
@@ -158,4 +158,6 @@ protected:
 #define ofxiPhone_MAPKIT_HYRBID     OFXIOS_MAPKIT_HYRBID
 #define ofxiPhoneMapKit ofxiOSMapKit
 //-------------------------------------------------------------------------------
+
+#endif
 

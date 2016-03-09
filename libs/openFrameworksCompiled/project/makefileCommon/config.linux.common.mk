@@ -88,6 +88,11 @@ ifeq ($(HAS_SYSTEM_MPG123),0)
     PLATFORM_DEFINES += OF_USING_MPG123
 endif
 
+# add OF_USE_GST_GL if requested
+ifdef USE_GST_GL
+    PLATFORM_DEFINES += OF_USE_GST_GL
+endif
+
 
 ################################################################################
 # PLATFORM REQUIRED ADDON
@@ -138,11 +143,11 @@ ifeq ($(CXX),g++)
 		endif
 	endif
 	ifeq ("$(GCC_MAJOR_GT_4)","1")
-		PLATFORM_CFLAGS = -Wall -std=c++14 -D_GLIBCXX_USE_CXX11_ABI=0
+		PLATFORM_CFLAGS = -Wall -std=c++14 -DGCC_HAS_REGEX
 	endif
 else
 	ifeq ($(CXX),g++-5)
-		PLATFORM_CFLAGS = -Wall -std=c++14 -D_GLIBCXX_USE_CXX11_ABI=0 -DGCC_HAS_REGEX
+		PLATFORM_CFLAGS = -Wall -std=c++14 -DGCC_HAS_REGEX
 	else
 	    ifeq ($(CXX),g++-4.9)
 		    PLATFORM_CFLAGS = -Wall -std=c++14 -DGCC_HAS_REGEX
@@ -187,7 +192,7 @@ PLATFORM_LDFLAGS = -Wl,-rpath=./libs:./bin/libs -Wl,--as-needed -Wl,--gc-section
 
 ifndef PROJECT_OPTIMIZATION_CFLAGS_RELEASE
 	# RELEASE Debugging options (http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html)
-	PLATFORM_OPTIMIZATION_CFLAGS_RELEASE = -O3
+	PLATFORM_OPTIMIZATION_CFLAGS_RELEASE = -O3 -DNDEBUG
 	
 	ifneq ($(LINUX_ARM),1)
 		PLATFORM_OPTIMIZATION_CFLAGS_RELEASE += -march=native -mtune=native
@@ -199,8 +204,6 @@ endif
 ifndef PROJECT_OPTIMIZATION_CFLAGS_DEBUG
 	# DEBUG Debugging options (http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html)
 	PLATFORM_OPTIMIZATION_CFLAGS_DEBUG = -g3
-else
-	PLATFORM_OPTIMIZATION_CFLAGS_DEBUG = $(PROJECT_OPTIMIZATION_CFLAGS_DEBUG)
 endif
 
 ################################################################################
@@ -240,6 +243,7 @@ endif
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/glew/%
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/cairo/%
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/glu/%
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/poco/lib/%
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/poco/include/Poco
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/poco/include/CppUnit
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/poco/include/Poco/%
@@ -320,11 +324,11 @@ PLATFORM_STATIC_LIBRARIES =
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoNetSSL.a
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoNet.a
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoCrypto.a
-PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoJSON.a
 #PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoMongoDB.a
 #PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoDataSQLite.a
 #PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoData.a
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoUtil.a
+PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoJSON.a
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoXML.a
 PLATFORM_STATIC_LIBRARIES += $(OF_LIBS_PATH)/poco/lib/$(ABI_LIB_SUBPATH)/libPocoFoundation.a
 
@@ -346,10 +350,11 @@ PLATFORM_PKG_CONFIG_LIBRARIES += fontconfig
 PLATFORM_PKG_CONFIG_LIBRARIES += sndfile
 PLATFORM_PKG_CONFIG_LIBRARIES += openal
 PLATFORM_PKG_CONFIG_LIBRARIES += openssl
-PLATFORM_PKG_CONFIG_LIBRARIES += libpulse-simple
-PLATFORM_PKG_CONFIG_LIBRARIES += alsa
+
 
 ifneq ($(LINUX_ARM),1)
+    PLATFORM_PKG_CONFIG_LIBRARIES += libpulse-simple
+    PLATFORM_PKG_CONFIG_LIBRARIES += alsa
 	PLATFORM_PKG_CONFIG_LIBRARIES += gl
 	PLATFORM_PKG_CONFIG_LIBRARIES += glu
 	PLATFORM_PKG_CONFIG_LIBRARIES += glew
@@ -367,6 +372,11 @@ endif
 # conditionally add mpg123
 ifeq ($(HAS_SYSTEM_MPG123),0)
     PLATFORM_PKG_CONFIG_LIBRARIES += libmpg123
+endif
+
+# conditionally add gstreamer-gl
+ifdef USE_GST_GL
+    PLATFORM_PKG_CONFIG_LIBRARIES += gstreamer-gl-$(GST_VERSION)
 endif
 
 ################################################################################

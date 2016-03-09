@@ -17,7 +17,7 @@ void ofApp::setup(){
     bDrawNormals= false;
     bDrawAxes   = false;
     bDrawLights = false;
-    bInfoText   = true;
+    bHelpText   = true;
     bMousePressed   = false;
     bSplitFaces = false;
     
@@ -45,9 +45,9 @@ void ofApp::setup(){
     pointLight3.setSpecularColor( ofFloatColor(18.f/255.f,150.f/255.f,135.f/255.f) );
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
-	material.setShininess( 120 );
+    material.setShininess( 120 );
     // the light highlight of the material //
-	material.setSpecularColor(ofColor(255, 255, 255, 255));
+    material.setSpecularColor(ofColor(255, 255, 255, 255));
     
     ofSetSphereResolution(24);
     
@@ -73,6 +73,7 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
     
     float spinX = sin(ofGetElapsedTimef()*.35f);
     float spinY = cos(ofGetElapsedTimef()*.075f);
@@ -87,14 +88,15 @@ void ofApp::draw() {
     pointLight.enable();
     pointLight2.enable();
     pointLight3.enable();
-    
-	material.begin();
-    
-    
-    ofSetColor(180);
+
+
+
+    // draw the outer sphere
+    material.begin();
     ofNoFill();
     ofDrawSphere(ofGetWidth()/2, ofGetHeight()/2, ofGetWidth());
-    
+    material.end();
+
     if(mode == 1 || mode == 3) texture.getTexture().bind();
     if(mode == 2) vidGrabber.getTexture().bind();
     
@@ -120,10 +122,18 @@ void ofApp::draw() {
             deformPlane.setVertex( ii, vert );
         }
     }
+
+    if(!bFill && bWireframe){
+        // if we are only drawing the wireframe, use
+        // the material to draw it, otherwise the material
+        // will be bound and unbound for every geometry
+        // and the wireframe will be drawn in black
+        material.begin();
+    }
     
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         if(mode == 3) {
             plane.transformGL();
             deformPlane.draw();
@@ -131,31 +141,26 @@ void ofApp::draw() {
         } else {
             plane.draw();
         }
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill) ofSetColor(255);
-        plane.setPosition(plane.getPosition().x, plane.getPosition().y, plane.getPosition().z+1);
-        //if(bFill) {
-        if( mode == 3 ) {
-            ofSetColor(255);
-        }
+		plane.setPosition(plane.getPosition().x, plane.getPosition().y, plane.getPosition().z+1);
         plane.drawWireframe();
-        //}
-        plane.setPosition(plane.getPosition().x, plane.getPosition().y, plane.getPosition().z-2);
+		plane.setPosition(plane.getPosition().x, plane.getPosition().y, plane.getPosition().z-1);
         
     }
-    
-    
+
     // Box //
     box.setPosition(ofGetWidth()*.5, ofGetHeight()*.25, 0);
     box.rotate(spinX, 1.0, 0.0, 0.0);
     box.rotate(spinY, 0, 1.0, 0.0);
     
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         if(mode == 3) {
             box.transformGL();
             for(int i = 0; i < ofBoxPrimitive::SIDES_TOTAL; i++ ) {
@@ -168,15 +173,13 @@ void ofApp::draw() {
         } else {
             box.draw();
         }
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill) ofSetColor(255);
         box.setScale(1.01f);
-        if(mode == 3) {
-            ofSetColor(255);
-        }
         box.drawWireframe();
         box.setScale(1.f);
     }
@@ -193,8 +196,8 @@ void ofApp::draw() {
     }
     
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         if(mode == 3) {
             float angle = ofGetElapsedTimef()*3.2;
             float strength = (sin( angle+.25 )) * .5f * 5.f;
@@ -211,12 +214,12 @@ void ofApp::draw() {
             sphere.getMesh().setFromTriangles( triangles );
         }
         sphere.draw();
-        
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill) ofSetColor(255);
         sphere.setScale(1.01f);
         sphere.drawWireframe();
         sphere.setScale(1.f);
@@ -233,8 +236,8 @@ void ofApp::draw() {
     }
     
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         
         if(mode == 3) {
             float angle = (ofGetElapsedTimef() * 1.4);
@@ -250,11 +253,12 @@ void ofApp::draw() {
         }
         
         icoSphere.draw();
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill) ofSetColor(255);
         icoSphere.setScale(1.01f);
         icoSphere.drawWireframe();
         icoSphere.setScale(1.f);
@@ -272,8 +276,8 @@ void ofApp::draw() {
     cylinder.rotate(spinX, 1.0, 0.0, 0.0);
     cylinder.rotate(spinY, 0, 1.0, 0.0);
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         if(mode == 3) {
             cylinder.transformGL();
             ofPushMatrix(); {
@@ -297,11 +301,12 @@ void ofApp::draw() {
         } else {
             cylinder.draw();
         }
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill || mode == 3) ofSetColor(255);
         cylinder.setScale(1.01f);
         cylinder.drawWireframe();
         cylinder.setScale(1.0f);
@@ -318,8 +323,8 @@ void ofApp::draw() {
         body        = cone.getConeMesh();
     }
     if(bFill) {
+        material.begin();
         ofFill();
-        ofSetColor(255);
         if(mode == 3) {
             cone.transformGL();
             ofPushMatrix();
@@ -339,14 +344,19 @@ void ofApp::draw() {
         } else {
             cone.draw();
         }
+        material.end();
     }
+
     if(bWireframe) {
         ofNoFill();
         ofSetColor(0, 0, 0);
-        if(!bFill || mode == 3) ofSetColor(255);
         cone.setScale(1.01f);
         cone.drawWireframe();
         cone.setScale(1.0f);
+    }
+
+    if(!bFill && bWireframe){
+        material.end();
     }
     
     if(mode == 1 || mode == 3) texture.getTexture().unbind();
@@ -416,17 +426,21 @@ void ofApp::draw() {
     ofDrawRectangle(cone.getPosition().x-154, cone.getPosition().y + 120, 136, 24);
     ofSetColor(255);
     ofDrawBitmapString("ofConePrimitive", cone.getPosition().x-150, cone.getPosition().y+136 );
-        
-    if(bInfoText) {
+    
+    
+    
+    if(bHelpText) {
         stringstream ss;
-        ss << "Framerate: " << ofToString(ofGetFrameRate(),0) << "\n";
+        ss << "FPS: " << ofToString(ofGetFrameRate(),0) << endl << endl;
         ss << "(f): Toggle Fullscreen"<<endl<<"(s): Draw Solid Shapes"<<endl<<"(w): Draw Wireframes"<<endl;
         ss <<"(1/2/3/4): Set Resolutions" <<endl<<"(n): Draw Normals"<<"\n(LEFT/RIGHT): Set Mode "<<ofToString(mode,0)<<endl;
         ss <<"(z): Split Faces " <<bSplitFaces<<endl;
-        ss <<"(a): Draw Axes"<<endl<<"(l): Render lights"<<endl<<"(t): Info Text"<<endl;
-        
+        ss <<"(a): Draw Axes"<<endl<<"(l): Render lights" << endl <<"(h): Toggle help."<<endl;
         ofDrawBitmapString(ss.str().c_str(), 20, 20);
     }
+    
+    
+    
     
     
 }
@@ -506,8 +520,8 @@ void ofApp::keyPressed(int key) {
         case 'l':
             bDrawLights = !bDrawLights;
             break;
-        case 't':
-            bInfoText=!bInfoText;
+        case 'h':
+            bHelpText=!bHelpText;
             break;
         case 'z':
             bSplitFaces = !bSplitFaces;

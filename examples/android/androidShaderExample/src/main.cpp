@@ -3,24 +3,26 @@
 #include "ofGLProgrammableRenderer.h"
 
 int main(){
-	ofSetCurrentRenderer(ofPtr<ofBaseRenderer>(new ofGLProgrammableRenderer()));
-	ofSetupOpenGL(1024,768, OF_WINDOW);			// <-------- setup the GL context
+	ofGLESWindowSettings settings;
+	settings.setGLESVersion(2);
+	ofCreateWindow(settings);			// <-------- setup the GL context
 
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN
 	// pass in width and height too:
-	ofRunApp( new ofApp() );
-	return 0;
+	return ofRunApp( new ofApp() );
 }
 
 
 #ifdef TARGET_ANDROID
-#include <jni.h>
+void ofAndroidApplicationInit()
+{
+    //application scope init
+}
 
-//========================================================================
-extern "C"{
-	void Java_cc_openframeworks_OFAndroid_init( JNIEnv*  env, jobject  thiz ){
-		main();
-	}
+void ofAndroidActivityInit()
+{
+	//activity scope init
+	main();
 }
 #endif

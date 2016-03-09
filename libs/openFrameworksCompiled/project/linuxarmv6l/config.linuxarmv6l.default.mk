@@ -53,7 +53,6 @@ PLATFORM_DEFINES += PIC
 PLATFORM_DEFINES += _REENTRANT
 PLATFORM_DEFINES += _LARGEFILE64_SOURCE
 PLATFORM_DEFINES += _FILE_OFFSET_BITS=64
-PLATFORM_DEFINES += _FORTIFY_SOURCE
 PLATFORM_DEFINES += __STDC_CONSTANT_MACROS
 PLATFORM_DEFINES += __STDC_LIMIT_MACROS
 PLATFORM_DEFINES += TARGET_POSIX
@@ -65,11 +64,6 @@ PLATFORM_DEFINES += HAVE_LIBBCM_HOST
 PLATFORM_DEFINES += USE_EXTERNAL_LIBBCM_HOST
 PLATFORM_DEFINES += USE_VCHIQ_ARM
 
-# Fix for firmware update @
-# https://github.com/Hexxeh/rpi-firmware/commit/ca3703d2d282ac96a97650e2e496276727e1b65b
-ifeq ($(strip $(shell cat $(RPI_ROOT)/opt/vc/include/interface/vmcs_host/vc_dispmanx.h | grep VC_IMAGE_TRANSFORM_T)),) 
-PLATFORM_DEFINES += USE_DISPMANX_TRANSFORM_T
-endif
 
 ################################################################################
 # PLATFORM REQUIRED ADDONS
@@ -154,11 +148,10 @@ PLATFORM_LDFLAGS += -pthread
 ################################################################################
 
 # Broadcom hardware interface library
-PLATFORM_HEADER_SEARCH_PATHS += /opt/vc/include
-PLATFORM_HEADER_SEARCH_PATHS += /opt/vc/include/IL
-PLATFORM_HEADER_SEARCH_PATHS += /opt/vc/include/interface/vcos/pthreads
-PLATFORM_HEADER_SEARCH_PATHS += /opt/vc/include/interface/vmcs_host/linux
-
+PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include
+PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include/IL
+PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include/interface/vcos/pthreads
+PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include/interface/vmcs_host/linux
 
 ##########################################################################################
 # PLATFORM LIBRARY SEARCH PATH
@@ -169,7 +162,7 @@ PLATFORM_HEADER_SEARCH_PATHS += /opt/vc/include/interface/vmcs_host/linux
 #   Note: Leave a leading space when adding list items with the += operator
 ##########################################################################################
 
-PLATFORM_LIBRARY_SEARCH_PATHS += /opt/vc/lib
+PLATFORM_LIBRARY_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/lib
 
 
 ################################################################################
@@ -188,51 +181,43 @@ PLATFORM_LIBRARY_SEARCH_PATHS += /opt/vc/lib
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 
-#PLATFORM_PKG_CONFIG_LIBRARIES += gstreamer-egl-$(GST_VERSION)
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/app/ofAppGLFWWindow.cpp
-$(info $(PLATFORM_ARCH))
-ifeq ($(CROSS_COMPILING),1)	
-	ifneq ($(wildcard $(RPI_ROOT)/etc/debian_version),)
-		#RASPBIAN
-		ifeq ($(HOST_ARCH),x86_64)
-			TOOLCHAIN_ROOT = $(RPI_TOOLS)/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
-		else
-			TOOLCHAIN_ROOT = $(RPI_TOOLS)/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin
-		endif
-		GCC_PREFIX=arm-linux-gnueabihf
-	else
-		#ARCH LINUX
-		TOOLCHAIN_ROOT = $(RPI_TOOLS)/arm-unknown-linux-gnueabihf/bin
-		GCC_PREFIX=arm-unknown-linux-gnueabihf
-	endif
 
-    PLATFORM_CXX = $(TOOLCHAIN_ROOT)/$(GCC_PREFIX)-g++
-	PLATFORM_CC = $(TOOLCHAIN_ROOT)/$(GCC_PREFIX)-gcc
-	PLATFORM_AR = $(TOOLCHAIN_ROOT)/$(GCC_PREFIX)-ar
-	PLATFORM_LD = $(TOOLCHAIN_ROOT)/$(GCC_PREFIX)-ld
+ifeq ($(CROSS_COMPILING),1)	
+$(info detected cross compiling $(CROSS_COMPILING))
+	ifdef TOOLCHAIN_ROOT
+		#You have specified TOOLCHAIN_ROOT with an environment variable
+	else
+		TOOLCHAIN_ROOT = /opt/cross/bin
+	endif
+	
+	ifdef GCC_PREFIX
+		#You have specified GCC_PREFIX with an environment variable
+	else
+		GCC_PREFIX = arm-linux-gnueabihf
+	endif
+	
+    PLATFORM_CXX = $(TOOLCHAIN_ROOT)/bin/$(GCC_PREFIX)-g++
+	PLATFORM_CC = $(TOOLCHAIN_ROOT)/bin/$(GCC_PREFIX)-gcc
+	PLATFORM_AR = $(TOOLCHAIN_ROOT)/bin/$(GCC_PREFIX)-ar
+	PLATFORM_LD = $(TOOLCHAIN_ROOT)/bin/$(GCC_PREFIX)-ld
 	
 	SYSROOT=$(RPI_ROOT)
-	#$(RPI_TOOLS)/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/libc/
 	
-	# Code Generation Option Flags (http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html)
 	PLATFORM_CFLAGS += --sysroot=$(SYSROOT)
 	
-	PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include
-	PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include/interface/vcos/pthreads
-	PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/include/interface/vmcs_host/linux
-	ifneq ($(wildcard $(RPI_ROOT)/etc/debian_version),)
-		PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/usr/include/c++/4.6/
-		PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/usr/include/c++/4.6/arm-linux-gnueabihf
-	else
-		PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/usr/include/c++/4.8.2/
-		PLATFORM_HEADER_SEARCH_PATHS += $(RPI_ROOT)/usr/include/c++/4.8.2/armv6l-unknown-linux-gnueabihf/
-	endif
-	
-	
-	PLATFORM_LIBRARY_SEARCH_PATHS += $(RPI_ROOT)/opt/vc/lib
-	
-	PLATFORM_LDFLAGS += --sysroot=$(SYSROOT)
-	
-	PKG_CONFIG_LIBDIR=$(SYSROOT)/usr/lib/pkgconfig:$(SYSROOT)/usr/lib/arm-linux-gnueabihf/pkgconfig:$(SYSROOT)/usr/share/pkgconfig
+	PLATFORM_HEADER_SEARCH_PATHS += $(SYSROOT)/usr/include/c++/4.9
+	PLATFORM_HEADER_SEARCH_PATHS += $(SYSROOT)/usr/include/$(GCC_PREFIX)/c++/4.9
+
+	PLATFORM_LIBRARY_SEARCH_PATHS += $(SYSROOT)/usr/lib/$(GCC_PREFIX)
+	PLATFORM_LIBRARY_SEARCH_PATHS += $(SYSROOT)/usr/lib/gcc/$(GCC_PREFIX)/4.9
+
+	PLATFORM_LDFLAGS += --sysroot=$(SYSROOT) 
+	PLATFORM_LDFLAGS += -Xlinker -rpath-link=$(SYSROOT)/usr/lib/$(GCC_PREFIX) 
+	PLATFORM_LDFLAGS += -Xlinker -rpath-link=$(SYSROOT)/lib/$(GCC_PREFIX) 
+	PLATFORM_LDFLAGS += -Xlinker -rpath-link=$(SYSROOT)/opt/vc/lib
+	PLATFORM_LDFLAGS += -Xlinker -rpath-link=$(SYSROOT)/usr/lib/arm-linux-gnueabihf/pulseaudio
+	 
+	PKG_CONFIG_LIBDIR=$(SYSROOT)/usr/lib/pkgconfig:$(SYSROOT)/usr/lib/$(GCC_PREFIX)/pkgconfig:$(SYSROOT)/usr/share/pkgconfig
 	
 endif

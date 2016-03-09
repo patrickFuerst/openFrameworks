@@ -111,12 +111,6 @@ else
 	MAC_OS_SDK_ROOT=
 endif
 
-# Architecture / Machine Flags (http://gcc.gnu.org/onlinedocs/gcc/Submodel-Options.html)
-ifeq ($(shell gcc -march=native -S -o /dev/null -xc /dev/null 2> /dev/null; echo $$?),0)
-	PLATFORM_CFLAGS += -march=native
-	PLATFORM_CFLAGS += -mtune=native
-endif
-
 # Optimization options (http://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html)
 #PLATFORM_CFLAGS += -finline-functions
 #PLATFORM_CFLAGS += -funroll-all-loops
@@ -133,11 +127,6 @@ ifdef MAC_OS_SDK_ROOT
 endif
 
 PLATFORM_CFLAGS += -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
-
-PLATFORM_CFLAGS += -fasm-blocks
-PLATFORM_CFLAGS += -funroll-loops
-PLATFORM_CFLAGS += -mssse3
-PLATFORM_CFLAGS += -fmessage-length=0
 
 PLATFORM_CXXFLAGS += -x objective-c++
 PLATFORM_CXXFLAGS += -std=c++11
@@ -176,10 +165,16 @@ PLATFORM_LDFLAGS += -mmacosx-version-min=$(MAC_OS_MIN_VERSION) -v
 ##########################################################################################
 
 # RELEASE Debugging options (http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html)
-PLATFORM_OPTIMIZATION_CFLAGS_RELEASE = -Os
+PLATFORM_OPTIMIZATION_CFLAGS_RELEASE = -Os -DNDEBUG
 
 # DEBUG Debugging options (http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html)
 PLATFORM_OPTIMIZATION_CFLAGS_DEBUG = -g3
+
+# Architecture / Machine Flags (http://gcc.gnu.org/onlinedocs/gcc/Submodel-Options.html)
+ifeq ($(shell gcc -march=native -S -o /dev/null -xc /dev/null 2> /dev/null; echo $$?),0)
+	#PLATFORM_OPTIMIZATION_CFLAGS_RELEASE += -march=native
+	PLATFORM_OPTIMIZATION_CFLAGS_RELEASE += -mtune=native
+endif
 
 ##########################################################################################
 # PLATFORM CORE EXCLUSIONS
@@ -200,6 +195,14 @@ PLATFORM_CORE_EXCLUSIONS =
 # core sources
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofDirectShowGrabber.cpp
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofDirectShowPlayer.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQtKitGrabber.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQtKitPlayer.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQtKitMovieRenderer.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQtKitPlayer.mm
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQtUtils.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQuicktimeGrabber.cpp
+PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofQuicktimePlayer.cpp
+
 ifneq ($(USE_GST),1)
 	PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofGstUtils.cpp
 	PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/video/ofGstVideoGrabber.cpp
@@ -220,6 +223,11 @@ PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/quicktime/%
 # third party static libs (this may not matter due to exclusions in poco's libsorder.make)
 PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/glut/lib/$(PLATFORM_LIB_SUBPATH)/%
 
+ifeq ($(USE_FMOD),0)
+	PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/fmodex/%
+	PLATFORM_CORE_EXCLUSIONS += $(OF_LIBS_PATH)/openFrameworks/sound/ofFmodSoundPlayer.cpp
+	PLATFORM_CFLAGS += -DUSE_FMOD=0
+endif
 
 ##########################################################################################
 # PLATFORM HEADER SEARCH PATHS
@@ -343,7 +351,6 @@ PLATFORM_FRAMEWORKS_SEARCH_PATHS = /System/Library/Frameworks
 ################################################################################
 #PLATFORM_CC=
 
-
 afterplatform: $(TARGET_NAME)
 	@rm -rf bin/$(BIN_NAME).app
 	@mkdir -p bin/$(BIN_NAME).app
@@ -378,16 +385,13 @@ afterplatform: $(TARGET_NAME)
 
 	@echo TARGET=$(TARGET)
 
-	@install_name_tool -change ./libfmodex.dylib @executable_path/libs/libfmodex.dylib $(TARGET)
-	@install_name_tool -change @executable_path/../Frameworks/GLUT.framework/Versions/A/GLUT @executable_path/Frameworks/GLUT.framework/Versions/A/GLUT $(TARGET)
 
 	@mv $(TARGET) bin/$(BIN_NAME).app/Contents/MacOS
-	@cp -r $(OF_EXPORT_PATH)/$(ABI_LIB_SUBPATH)/* bin/$(BIN_NAME).app/Contents/MacOS
 	
-ifdef PROJECT_AFTER_OSX
-	${PROJECT_AFTER_OSX}
-endif	
-
+ifneq ($(USE_FMOD),0)
+	@cp -r $(OF_EXPORT_PATH)/$(ABI_LIB_SUBPATH)/libs/* bin/$(BIN_NAME).app/Contents/MacOS
+endif
+	
 	@echo
 	@echo "     compiling done"
 	@echo "     to launch the application"
